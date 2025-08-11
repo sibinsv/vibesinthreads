@@ -1,0 +1,221 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+  // For PostgreSQL migration, change to:
+  // provider = "postgresql"
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  image       String?
+  parentId    Int?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id              Int               @id @default(autoincrement())
+  name            String
+  slug            String            @unique
+  description     String
+  shortDescription String?
+  price           Float
+  comparePrice    Float?
+  costPrice       Float?
+  sku             String?           @unique
+  stock           Int               @default(0)
+  isActive        Boolean           @default(true)
+  isFeatured      Boolean           @default(false)
+  weight          Float?
+  
+  // Indian ethnic fashion specific fields
+  fabric          String?
+  occasion        String?           // Wedding, Festival, Casual, Party, etc.
+  designer        String?
+  craftType       String?           // Chikankari, Zardozi, Block Print, etc.
+  region          String?           // Gujarat, Rajasthan, Bengal, etc.
+  careInstructions String?
+  
+  // SEO fields
+  metaTitle       String?
+  metaDescription String?
+  
+  // Relationships
+  categoryId      Int
+  category        Category          @relation(fields: [categoryId], references: [id])
+  images          ProductImage[]
+  variants        ProductVariant[]
+  attributes      ProductAttribute[]
+  orderItems      OrderItem[]
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("products")
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  altText   String?
+  isMain    Boolean @default(false)
+  sortOrder Int     @default(0)
+
+  @@map("product_images")
+}
+
+model ProductVariant {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // Variant details
+  name      String  // Size S, Color Red, etc.
+  value     String  // S, Red, etc.
+  type      String  // size, color, style
+  price     Float?
+  stock     Int     @default(0)
+  sku       String?
+  isActive  Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, type, value])
+  @@map("product_variants")
+}
+
+model ProductAttribute {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String  // Blouse Piece, Dupatta Included, etc.
+  value     String  // Yes, No, Cotton, etc.
+
+  @@map("product_attributes")
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
+  firstName   String
+  lastName    String
+  phone       String?
+  password    String
+  isActive    Boolean   @default(true)
+  role        String    @default("customer") // customer, admin, staff
+  
+  // Profile details
+  dateOfBirth DateTime?
+  gender      String?   // Male, Female, Other
+  
+  // Preferences for Indian fashion
+  preferredOccasions String? // Wedding, Festival, Casual (JSON array)
+  preferredFabrics   String? // Cotton, Silk, Chiffon (JSON array)
+  sizePreferences    String? // JSON object with different garment sizes
+  
+  orders      Order[]
+  addresses   Address[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Address {
+  id          Int     @id @default(autoincrement())
+  userId      Int
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  firstName   String
+  lastName    String
+  company     String?
+  address1    String
+  address2    String?
+  city        String
+  state       String
+  postalCode  String
+  country     String  @default("IN")
+  phone       String?
+  isDefault   Boolean @default(false)
+  
+  orders      Order[]
+
+  @@map("addresses")
+}
+
+model Order {
+  id              Int         @id @default(autoincrement())
+  orderNumber     String      @unique
+  userId          Int?
+  user            User?       @relation(fields: [userId], references: [id])
+  
+  // Order status
+  status          String      @default("pending") // pending, confirmed, processing, shipped, delivered, cancelled
+  paymentStatus   String      @default("pending") // pending, paid, failed, refunded
+  
+  // Amounts
+  subtotal        Float
+  taxAmount       Float
+  shippingAmount  Float
+  discountAmount  Float       @default(0)
+  totalAmount     Float
+  
+  // Shipping details
+  shippingAddressId Int?
+  shippingAddress Address?    @relation(fields: [shippingAddressId], references: [id])
+  shippingMethod  String?
+  trackingNumber  String?
+  
+  // Customer details for guest orders
+  customerEmail   String?
+  customerPhone   String?
+  
+  // Order items
+  items           OrderItem[]
+  
+  // Timestamps
+  orderDate       DateTime    @default(now())
+  shippedDate     DateTime?
+  deliveredDate   DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id              Int     @id @default(autoincrement())
+  orderId         Int
+  order           Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       Int
+  product         Product @relation(fields: [productId], references: [id])
+  
+  // Item details at time of order
+  productName     String
+  productSku      String?
+  variant         String? // JSON string of selected variants
+  quantity        Int
+  unitPrice       Float
+  totalPrice      Float
+
+  @@map("order_items")
+}
