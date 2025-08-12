@@ -47,7 +47,8 @@ export const productsApi = {
   },
 
   getFeatured: async (limit?: number): Promise<ApiResponse<Product[]>> => {
-    const response = await api.get(`/products/featured${limit ? `?limit=${limit}` : ''}`);
+    const params = limit ? `?limit=${limit}` : '';
+    const response = await api.get(`/products/featured${params}`);
     return response.data;
   },
 

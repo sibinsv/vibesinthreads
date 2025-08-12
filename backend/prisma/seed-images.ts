@@ -19,7 +19,7 @@ async function updateImagesWithPlaceholders() {
     await prisma.category.updateMany({
       where: { slug: cat.slug },
       data: {
-        image: `https://picsum.photos/400/300?random=${cat.slug}&blur=1`
+        image: `https://placehold.co/400x300/f3f4f6/374151/png?text=${encodeURIComponent(cat.name)}`
       }
     });
     console.log(`✅ Updated ${cat.name} category image`);
@@ -41,7 +41,7 @@ async function updateImagesWithPlaceholders() {
       await prisma.productImage.update({
         where: { id: image.id },
         data: {
-          url: `https://picsum.photos/400/600?random=${randomId + i}&grayscale`
+          url: `https://placehold.co/400x600/e5e7eb/6b7280/png?text=Product+Image+${i + 1}`
         }
       });
       

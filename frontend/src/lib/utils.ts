@@ -24,9 +24,6 @@ export function generateProductImageUrl(slug: string, imageName: string): string
   return `/images/products/${slug}/${imageName}`
 }
 
-export function generateCategoryImageUrl(slug: string): string {
-  return `/images/categories/${slug}.jpg`
-}
 
 export function generateSlug(text: string): string {
   return text
