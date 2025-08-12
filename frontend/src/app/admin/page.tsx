@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Package, Users, ShoppingCart, TrendingUp, Plus, Eye } from 'lucide-react';
+import { Package, Users, Plus, Eye } from 'lucide-react';
 import { Product, Category } from '@/lib/types';
 import { productsApi, categoriesApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -11,16 +11,12 @@ import { formatPriceSimple } from '@/lib/utils';
 interface DashboardStats {
   totalProducts: number;
   totalCategories: number;
-  totalOrders: number;
-  totalRevenue: number;
 }
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalProducts: 0,
-    totalCategories: 0,
-    totalOrders: 0,
-    totalRevenue: 0
+    totalCategories: 0
   });
   const [recentProducts, setRecentProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,12 +51,6 @@ export default function AdminDashboard() {
           }));
         }
 
-        // Mock data for orders and revenue
-        setStats(prev => ({
-          ...prev,
-          totalOrders: 156,
-          totalRevenue: 2450000
-        }));
 
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -98,20 +88,6 @@ export default function AdminDashboard() {
       icon: Package,
       color: 'bg-success',
       href: '/admin/categories'
-    },
-    {
-      title: 'Total Orders',
-      value: stats.totalOrders,
-      icon: ShoppingCart,
-      color: 'bg-warning',
-      href: '/admin/orders'
-    },
-    {
-      title: 'Revenue',
-      value: formatPriceSimple(stats.totalRevenue),
-      icon: TrendingUp,
-      color: 'bg-accent',
-      href: '/admin/analytics'
     }
   ];
 
@@ -140,7 +116,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {statCards.map((stat, index) => (
           <Link key={index} href={stat.href}>
             <div className="bg-card rounded-lg p-6 shadow-sm border border-border hover:shadow-md transition-shadow cursor-pointer">
