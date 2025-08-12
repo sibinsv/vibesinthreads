@@ -95,3 +95,54 @@ export interface PaginationParams {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+export interface Order {
+  id: number;
+  orderNumber: string;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+  total: number;
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  discount?: number;
+  createdAt: string;
+  updatedAt: string;
+  customer: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  shippingAddress: {
+    name: string;
+    address: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  items: OrderItem[];
+}
+
+export interface OrderItem {
+  id: number;
+  productId: number;
+  productName: string;
+  productSlug: string;
+  productImage?: string;
+  quantity: number;
+  price: number;
+  total: number;
+  variant?: string;
+}
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: 'admin' | 'customer';
+  isActive: boolean;
+  createdAt: string;
+  lastLogin?: string;
+  orderCount?: number;
+  totalSpent?: number;
+}
