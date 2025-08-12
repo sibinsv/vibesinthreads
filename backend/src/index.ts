@@ -3,9 +3,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
 import { connectDatabase } from './config/database';
 import routes from './routes';
 import { errorHandler, notFound } from './middleware/errorHandler';
+import { swaggerSpec } from './config/swagger';
 
 dotenv.config();
 
@@ -28,6 +30,13 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Vibes in Threads API Documentation'
+}));
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({
@@ -37,6 +46,34 @@ app.get('/health', (req, res) => {
     version: '1.0.0'
   });
 });
+
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Health check endpoint
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Server is running
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: 'Vibes in Threads API is running!'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                 version:
+ *                   type: string
+ *                   example: '1.0.0'
+ */
 
 // API routes
 app.use('/api/v1', routes);
@@ -65,7 +102,8 @@ const startServer = async () => {
 🚀 Vibes in Threads API Server Started!
 📍 Server running on port ${PORT}
 🌍 Environment: ${process.env.NODE_ENV || 'development'}
-📚 API Documentation: http://localhost:${PORT}/api/v1
+📚 API Documentation: http://localhost:${PORT}/api-docs
+📋 Swagger JSON: http://localhost:${PORT}/api-docs/swagger.json
 💚 Health Check: http://localhost:${PORT}/health
       `);
     });
