@@ -93,6 +93,11 @@ export const categoriesApi = {
   getMain: async (): Promise<ApiResponse<Category[]>> => {
     const response = await api.get('/categories/main');
     return response.data;
+  },
+
+  update: async (id: number, data: any): Promise<ApiResponse<Category>> => {
+    const response = await api.put(`/categories/${id}`, data);
+    return response.data;
   }
 };
 
