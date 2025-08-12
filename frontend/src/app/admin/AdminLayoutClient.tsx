@@ -116,7 +116,7 @@ export default function AdminLayoutClient({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-8">
+        <div className="flex-1 min-w-0 p-8">
           {children}
         </div>
       </div>

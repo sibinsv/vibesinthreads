@@ -100,7 +100,7 @@ export default function AdminProductsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -187,7 +187,7 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Products Table */}
-      <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+      <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden w-full">
         {isLoading ? (
           <div className="p-8">
             <div className="animate-pulse space-y-4">
@@ -207,7 +207,7 @@ export default function AdminProductsPage() {
           </div>
         ) : products.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full" style={{ minWidth: '1000px' }}>
               <thead className="bg-secondary border-b border-border">
                 <tr>
                   <th className="px-6 py-3 text-left">
