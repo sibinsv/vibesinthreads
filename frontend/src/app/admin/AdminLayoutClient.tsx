@@ -65,7 +65,7 @@ export default function AdminLayoutClient({
 
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-64 bg-card shadow-sm h-[calc(100vh-4rem)] overflow-y-auto border-r border-border">
+        <div className="w-72 min-w-72 bg-card shadow-sm h-[calc(100vh-4rem)] overflow-y-auto border-r border-border hidden lg:block">
           <nav className="p-6">
             <div className="space-y-2">
               {navigation.map((item) => {
