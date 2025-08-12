@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, X, Upload, Grid3X3 } from 'lucide-react';
+import { ArrowLeft, Save, X, Grid3X3, Trash2 } from 'lucide-react';
 import { Category } from '@/lib/types';
 import { categoriesApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -16,8 +16,10 @@ interface CategoryFormData {
   parentId: number | null;
 }
 
-export default function NewCategoryPage() {
+export default function EditCategoryPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const [categoryId, setCategoryId] = useState<number | null>(null);
+  
   const [formData, setFormData] = useState<CategoryFormData>({
     name: '',
     slug: '',
@@ -25,25 +27,62 @@ export default function NewCategoryPage() {
     image: '',
     parentId: null
   });
+  
   const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Fetch categories for parent selection
+  // Initialize categoryId from params
   useEffect(() => {
-    const fetchCategories = async () => {
+    const initializeId = async () => {
+      const resolvedParams = await params;
+      setCategoryId(parseInt(resolvedParams.id));
+    };
+    initializeId();
+  }, [params]);
+
+  // Load category data and categories
+  useEffect(() => {
+    if (categoryId === null) return;
+    
+    const loadData = async () => {
+      setIsLoading(true);
       try {
-        const response = await categoriesApi.getAll(false);
-        if (response.success && response.data) {
-          setCategories(response.data);
+        const [categoryResponse, categoriesResponse] = await Promise.all([
+          categoriesApi.getById(categoryId),
+          categoriesApi.getAll(false)
+        ]);
+
+        if (categoryResponse.success && categoryResponse.data) {
+          const category = categoryResponse.data;
+          setFormData({
+            name: category.name,
+            slug: category.slug,
+            description: category.description || '',
+            image: category.image || '',
+            parentId: category.parentId
+          });
+        } else {
+          alert('Category not found');
+          router.push('/admin/categories');
+        }
+
+        if (categoriesResponse.success && categoriesResponse.data) {
+          // Filter out the current category and its descendants from parent options
+          const filteredCategories = categoriesResponse.data.filter(cat => cat.id !== categoryId);
+          setCategories(filteredCategories);
         }
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error('Error loading data:', error);
+        alert('Failed to load category data');
+        router.push('/admin/categories');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchCategories();
-  }, []);
+    loadData();
+  }, [categoryId, router]);
 
   const handleInputChange = (field: keyof CategoryFormData, value: string | number | null) => {
     setFormData(prev => ({
@@ -74,19 +113,36 @@ export default function NewCategoryPage() {
 
     setIsSaving(true);
     try {
-      // This would need to be implemented in the API
-      console.log('Creating category:', formData);
+      const response = await categoriesApi.update(categoryId, formData);
       
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      alert('Category created successfully!');
-      router.push('/admin/categories');
+      if (response.success) {
+        alert('Category updated successfully!');
+        router.push('/admin/categories');
+      } else {
+        alert('Failed to update category: ' + (response.error || 'Unknown error'));
+      }
     } catch (error) {
-      console.error('Error creating category:', error);
-      alert('Failed to create category. Please try again.');
+      console.error('Error updating category:', error);
+      alert('Failed to update category. Please try again.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+      try {
+        const response = await categoriesApi.delete(categoryId);
+        if (response.success) {
+          alert('Category deleted successfully');
+          router.push('/admin/categories');
+        } else {
+          alert('Failed to delete category');
+        }
+      } catch (error) {
+        console.error('Error deleting category:', error);
+        alert('Failed to delete category');
+      }
     }
   };
 
@@ -95,6 +151,29 @@ export default function NewCategoryPage() {
       router.push('/admin/categories');
     }
   };
+
+  if (isLoading || categoryId === null) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-muted rounded w-64 mb-2"></div>
+          <div className="h-4 bg-muted rounded w-96"></div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-card rounded-lg p-6">
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-muted rounded w-1/4"></div>
+                <div className="h-10 bg-muted rounded"></div>
+                <div className="h-4 bg-muted rounded w-1/4"></div>
+                <div className="h-10 bg-muted rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -108,8 +187,8 @@ export default function NewCategoryPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Add New Category</h1>
-            <p className="text-muted-foreground mt-1">Create a new product category</p>
+            <h1 className="text-2xl font-bold text-foreground">Edit Category</h1>
+            <p className="text-muted-foreground mt-1">Update category information</p>
           </div>
         </div>
         
@@ -129,7 +208,7 @@ export default function NewCategoryPage() {
             className="gap-2"
           >
             <Save className="h-4 w-4" />
-            {isSaving ? 'Creating...' : 'Create Category'}
+            {isSaving ? 'Updating...' : 'Update Category'}
           </Button>
         </div>
       </div>
@@ -282,6 +361,23 @@ export default function NewCategoryPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Actions */}
+          <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+            <h3 className="text-sm font-semibold text-foreground mb-4">Danger Zone</h3>
+            <div className="space-y-3">
+              <Button 
+                variant="outline"
+                onClick={handleDelete}
+                className="w-full gap-2 text-destructive hover:text-destructive border-destructive/20 hover:border-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete Category
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                This action cannot be undone. This will permanently delete the category and all its associated data.
+              </p>
+            </div>
+          </div>
 
           {/* Help Text */}
           <div className="bg-card rounded-lg shadow-sm border border-border p-6">

@@ -690,37 +690,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               </select>
             </div>
 
-            {/* Actions */}
+            {/* Danger Zone */}
             <div className="bg-card rounded-lg shadow-sm border border-border p-6">
-              <h3 className="text-sm font-semibold text-foreground mb-4">Actions</h3>
+              <h3 className="text-sm font-semibold text-foreground mb-4">Danger Zone</h3>
               <div className="space-y-3">
-                <Button 
-                  type="submit"
-                  disabled={isSaving}
-                  className="w-full gap-2"
-                >
-                  <Save className="h-4 w-4" />
-                  {isSaving ? 'Updating...' : 'Update Product'}
-                </Button>
-                
-                <Link href={`/products/${formData.slug}`} target="_blank">
-                  <Button variant="outline" className="w-full gap-2">
-                    <Eye className="h-4 w-4" />
-                    Preview Product
-                  </Button>
-                </Link>
-                
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  onClick={handleCancel}
-                  disabled={isSaving}
-                  className="w-full gap-2"
-                >
-                  <X className="h-4 w-4" />
-                  Cancel
-                </Button>
-                
                 <Button 
                   type="button"
                   variant="outline"
@@ -730,6 +703,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                   <Trash2 className="h-4 w-4" />
                   Delete Product
                 </Button>
+                <p className="text-xs text-muted-foreground">
+                  This action cannot be undone. This will permanently delete the product and all its associated data.
+                </p>
               </div>
             </div>
 
