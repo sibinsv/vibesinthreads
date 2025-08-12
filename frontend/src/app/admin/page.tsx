@@ -223,20 +223,6 @@ export default function AdminDashboard() {
                   {recentProducts.filter(p => p.isFeatured).length}
                 </span>
               </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Out of Stock</span>
-                <span className="text-sm font-medium text-destructive">
-                  {recentProducts.filter(p => p.stock === 0).length}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Low Stock (&lt; 5)</span>
-                <span className="text-sm font-medium text-warning">
-                  {recentProducts.filter(p => p.stock < 5 && p.stock > 0).length}
-                </span>
-              </div>
             </div>
 
             <div className="mt-6 pt-6 border-t border-border">

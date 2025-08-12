@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { 
   Package, 
   Users, 
-  ShoppingCart, 
   BarChart3, 
   Settings,
   Home,
@@ -20,7 +19,6 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: BarChart3 },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Categories', href: '/admin/categories', icon: Grid3X3 },
-  { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
