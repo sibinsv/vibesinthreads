@@ -25,8 +25,6 @@ model Category {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@index([parentId])
-  @@index([slug])
   @@map("categories")
 }
 
@@ -68,14 +66,6 @@ model Product {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
-  @@index([categoryId])
-  @@index([slug])
-  @@index([isActive])
-  @@index([isFeatured])
-  @@index([price])
-  @@index([createdAt])
-  @@index([fabric])
-  @@index([occasion])
   @@map("products")
 }
 
