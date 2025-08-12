@@ -77,8 +77,8 @@ export default function AdminDashboard() {
     return (
       <div className="space-y-8">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-64 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-96"></div>
+          <div className="h-8 bg-muted rounded w-64 mb-2"></div>
+          <div className="h-4 bg-muted rounded w-96"></div>
         </div>
       </div>
     );
@@ -89,28 +89,28 @@ export default function AdminDashboard() {
       title: 'Total Products',
       value: stats.totalProducts,
       icon: Package,
-      color: 'bg-blue-500',
+      color: 'bg-primary',
       href: '/admin/products'
     },
     {
       title: 'Categories',
       value: stats.totalCategories,
       icon: Package,
-      color: 'bg-green-500',
+      color: 'bg-success',
       href: '/admin/categories'
     },
     {
       title: 'Total Orders',
       value: stats.totalOrders,
       icon: ShoppingCart,
-      color: 'bg-yellow-500',
+      color: 'bg-warning',
       href: '/admin/orders'
     },
     {
       title: 'Revenue',
       value: formatPriceSimple(stats.totalRevenue),
       icon: TrendingUp,
-      color: 'bg-rose-500',
+      color: 'bg-accent',
       href: '/admin/analytics'
     }
   ];
@@ -120,8 +120,8 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Welcome to Vibes in Threads Admin Panel</p>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Welcome to Vibes in Threads Admin Panel</p>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/admin/products/new">
@@ -143,11 +143,11 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat, index) => (
           <Link key={index} href={stat.href}>
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+            <div className="bg-card rounded-lg p-6 shadow-sm border border-border hover:shadow-md transition-shadow cursor-pointer">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">
+                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                  <p className="text-3xl font-bold text-foreground mt-2">
                     {typeof stat.value === 'number' && stat.title !== 'Revenue' 
                       ? stat.value.toLocaleString() 
                       : stat.value}
@@ -164,10 +164,10 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Recent Products */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
+        <div className="bg-card rounded-lg shadow-sm border border-border">
+          <div className="p-6 border-b border-border">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Recent Products</h2>
+              <h2 className="text-lg font-semibold text-foreground">Recent Products</h2>
               <Link href="/admin/products">
                 <Button variant="outline" size="sm">View All</Button>
               </Link>
@@ -179,10 +179,10 @@ export default function AdminDashboard() {
               <div className="space-y-4">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="flex items-center gap-4 animate-pulse">
-                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+                    <div className="w-12 h-12 bg-muted rounded-lg"></div>
                     <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-muted rounded w-1/2"></div>
                     </div>
                   </div>
                 ))}
@@ -191,22 +191,22 @@ export default function AdminDashboard() {
               <div className="space-y-4">
                 {recentProducts.map((product) => (
                   <div key={product.id} className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-rose-50 rounded-lg flex items-center justify-center">
-                      <Package className="h-6 w-6 text-rose-600" />
+                    <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center">
+                      <Package className="h-6 w-6 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-foreground truncate">
                         {product.name}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         {product.category.name} • {formatPriceSimple(product.price)}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                         product.isActive 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
+                          ? 'bg-success/10 text-success' 
+                          : 'bg-destructive/10 text-destructive'
                       }`}>
                         {product.isActive ? 'Active' : 'Inactive'}
                       </span>
@@ -216,8 +216,8 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <Package className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No products found</p>
+                <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No products found</p>
                 <Link href="/admin/products/new">
                   <Button className="mt-4">Add Your First Product</Button>
                 </Link>
@@ -227,43 +227,43 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Stats */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Quick Stats</h2>
+        <div className="bg-card rounded-lg shadow-sm border border-border">
+          <div className="p-6 border-b border-border">
+            <h2 className="text-lg font-semibold text-foreground">Quick Stats</h2>
           </div>
           
           <div className="p-6">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Active Products</span>
-                <span className="text-sm font-medium text-green-600">
+                <span className="text-sm text-muted-foreground">Active Products</span>
+                <span className="text-sm font-medium text-success">
                   {recentProducts.filter(p => p.isActive).length} / {recentProducts.length}
                 </span>
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Featured Products</span>
-                <span className="text-sm font-medium text-blue-600">
+                <span className="text-sm text-muted-foreground">Featured Products</span>
+                <span className="text-sm font-medium text-primary">
                   {recentProducts.filter(p => p.isFeatured).length}
                 </span>
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Out of Stock</span>
-                <span className="text-sm font-medium text-red-600">
+                <span className="text-sm text-muted-foreground">Out of Stock</span>
+                <span className="text-sm font-medium text-destructive">
                   {recentProducts.filter(p => p.stock === 0).length}
                 </span>
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Low Stock (&lt; 5)</span>
-                <span className="text-sm font-medium text-yellow-600">
+                <span className="text-sm text-muted-foreground">Low Stock (&lt; 5)</span>
+                <span className="text-sm font-medium text-warning">
                   {recentProducts.filter(p => p.stock < 5 && p.stock > 0).length}
                 </span>
               </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="mt-6 pt-6 border-t border-border">
               <Link href="/admin/products">
                 <Button variant="outline" className="w-full">
                   Manage All Products

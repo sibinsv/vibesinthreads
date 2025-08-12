@@ -7,12 +7,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-rose-600 text-rose-50 shadow hover:bg-rose-600/90",
-        destructive: "bg-red-500 text-red-50 shadow-sm hover:bg-red-500/90",
-        outline: "border border-rose-200 bg-white shadow-sm hover:bg-rose-50 hover:text-rose-900",
-        secondary: "bg-rose-100 text-rose-900 shadow-sm hover:bg-rose-100/80",
-        ghost: "hover:bg-rose-100 hover:text-rose-900",
-        link: "text-rose-900 underline-offset-4 hover:underline",
+        default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        outline: "border border-border bg-card text-foreground shadow-sm hover:bg-secondary hover:text-secondary-foreground",
+        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+        ghost: "hover:bg-secondary hover:text-secondary-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
         default: "h-9 px-4 py-2",

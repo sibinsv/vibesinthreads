@@ -205,8 +205,8 @@ export default function NewProductPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Add New Product</h1>
-            <p className="text-gray-600 mt-1">Create a new product for your catalog</p>
+            <h1 className="text-2xl font-bold text-foreground">Add New Product</h1>
+            <p className="text-muted-foreground mt-1">Create a new product for your catalog</p>
           </div>
         </div>
 
@@ -230,135 +230,135 @@ export default function NewProductPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Basic Information</h2>
+            <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-6">Basic Information</h2>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Product Name *
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     placeholder="Enter product name"
                   />
-                  {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                  {errors.name && <p className="text-destructive text-sm mt-1">{errors.name}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Slug
                   </label>
                   <input
                     type="text"
                     value={formData.slug}
                     onChange={(e) => handleInputChange('slug', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     placeholder="product-slug"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Auto-generated from product name</p>
+                  <p className="text-xs text-muted-foreground mt-1">Auto-generated from product name</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Short Description
                   </label>
                   <input
                     type="text"
                     value={formData.shortDescription}
                     onChange={(e) => handleInputChange('shortDescription', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     placeholder="Brief product description"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Description *
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     rows={6}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     placeholder="Detailed product description"
                   />
-                  {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+                  {errors.description && <p className="text-destructive text-sm mt-1">{errors.description}</p>}
                 </div>
               </div>
             </div>
 
             {/* Product Details */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Product Details</h2>
+            <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-6">Product Details</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Fabric</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Fabric</label>
                   <input
                     type="text"
                     value={formData.fabric}
                     onChange={(e) => handleInputChange('fabric', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     placeholder="e.g., Cotton, Silk, Georgette"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Occasion</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Occasion</label>
                   <input
                     type="text"
                     value={formData.occasion}
                     onChange={(e) => handleInputChange('occasion', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     placeholder="e.g., Wedding, Festival, Casual"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Designer</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Designer</label>
                   <input
                     type="text"
                     value={formData.designer}
                     onChange={(e) => handleInputChange('designer', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     placeholder="Designer name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Craft Type</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Craft Type</label>
                   <input
                     type="text"
                     value={formData.craftType}
                     onChange={(e) => handleInputChange('craftType', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     placeholder="e.g., Chikankari, Zari Work"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Region</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Region</label>
                   <input
                     type="text"
                     value={formData.region}
                     onChange={(e) => handleInputChange('region', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     placeholder="e.g., Gujarat, Rajasthan"
                   />
                 </div>
               </div>
 
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Care Instructions</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Care Instructions</label>
                 <textarea
                   value={formData.careInstructions}
                   onChange={(e) => handleInputChange('careInstructions', e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                   placeholder="Care and maintenance instructions"
                 />
               </div>
@@ -368,8 +368,8 @@ export default function NewProductPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Status */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Status</h2>
+            <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Status</h2>
               
               <div className="space-y-4">
                 <div className="flex items-center">
@@ -378,9 +378,9 @@ export default function NewProductPage() {
                     id="isActive"
                     checked={formData.isActive}
                     onChange={(e) => handleInputChange('isActive', e.target.checked)}
-                    className="rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                    className="rounded border-border text-primary focus:ring-primary"
                   />
-                  <label htmlFor="isActive" className="ml-2 text-sm text-gray-700">
+                  <label htmlFor="isActive" className="ml-2 text-sm text-foreground">
                     Active (visible to customers)
                   </label>
                 </div>
@@ -391,9 +391,9 @@ export default function NewProductPage() {
                     id="isFeatured"
                     checked={formData.isFeatured}
                     onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
-                    className="rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                    className="rounded border-border text-primary focus:ring-primary"
                   />
-                  <label htmlFor="isFeatured" className="ml-2 text-sm text-gray-700">
+                  <label htmlFor="isFeatured" className="ml-2 text-sm text-foreground">
                     Featured product
                   </label>
                 </div>
@@ -401,17 +401,17 @@ export default function NewProductPage() {
             </div>
 
             {/* Category */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Category</h2>
+            <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Category</h2>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Category *
                 </label>
                 <select
                   value={formData.categoryId}
                   onChange={(e) => handleInputChange('categoryId', parseInt(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                 >
                   <option value={0}>Select a category</option>
                   {categories.map((category) => (
@@ -420,60 +420,60 @@ export default function NewProductPage() {
                     </option>
                   ))}
                 </select>
-                {errors.categoryId && <p className="text-red-500 text-sm mt-1">{errors.categoryId}</p>}
+                {errors.categoryId && <p className="text-destructive text-sm mt-1">{errors.categoryId}</p>}
               </div>
             </div>
 
             {/* Pricing */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Pricing</h2>
+            <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Pricing</h2>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Price *
                   </label>
                   <input
                     type="number"
                     value={formData.price}
                     onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     placeholder="0.00"
                     step="0.01"
                     min="0"
                   />
-                  {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
+                  {errors.price && <p className="text-destructive text-sm mt-1">{errors.price}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Compare Price
                   </label>
                   <input
                     type="number"
                     value={formData.comparePrice || ''}
                     onChange={(e) => handleInputChange('comparePrice', parseFloat(e.target.value) || undefined)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     placeholder="0.00"
                     step="0.01"
                     min="0"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Original price for discount display</p>
+                  <p className="text-xs text-muted-foreground mt-1">Original price for discount display</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Stock Quantity *
                   </label>
                   <input
                     type="number"
                     value={formData.stock}
                     onChange={(e) => handleInputChange('stock', parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     placeholder="0"
                     min="0"
                   />
-                  {errors.stock && <p className="text-red-500 text-sm mt-1">{errors.stock}</p>}
+                  {errors.stock && <p className="text-destructive text-sm mt-1">{errors.stock}</p>}
                 </div>
               </div>
             </div>

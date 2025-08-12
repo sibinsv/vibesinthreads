@@ -104,8 +104,8 @@ export default function AdminProductsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-600 mt-1">Manage your product catalog</p>
+          <h1 className="text-2xl font-bold text-foreground">Products</h1>
+          <p className="text-muted-foreground mt-1">Manage your product catalog</p>
         </div>
         <Link href="/admin/products/new">
           <Button className="gap-2">
@@ -116,17 +116,17 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-card rounded-lg shadow-sm border border-border p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {/* Search */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <input
               type="text"
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+              className="w-full pl-9 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
             />
           </div>
 
@@ -143,7 +143,7 @@ export default function AdminProductsPage() {
                 const [sortBy, sortOrder] = e.target.value.split('_');
                 setPagination(prev => ({ ...prev, sortBy, sortOrder: sortOrder as 'asc' | 'desc', page: 1 }));
               }}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+              className="px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
             >
               <option value="createdAt_desc">Newest First</option>
               <option value="createdAt_asc">Oldest First</option>
@@ -157,16 +157,16 @@ export default function AdminProductsPage() {
 
         {/* Bulk Actions */}
         {selectedProducts.size > 0 && (
-          <div className="mt-4 p-4 bg-rose-50 rounded-lg border border-rose-200">
+          <div className="mt-4 p-4 bg-accent rounded-lg border border-border">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-rose-700">
+              <span className="text-sm text-primary">
                 {selectedProducts.size} product{selectedProducts.size !== 1 ? 's' : ''} selected
               </span>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm">
                   Bulk Edit
                 </Button>
-                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
                   <Trash2 className="h-4 w-4 mr-1" />
                   Delete Selected
                 </Button>
@@ -177,7 +177,7 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Results Summary */}
-      <div className="flex items-center justify-between text-sm text-gray-600">
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>
           Showing {products.length} of {totalProducts} products
         </span>
@@ -187,20 +187,20 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
         {isLoading ? (
           <div className="p-8">
             <div className="animate-pulse space-y-4">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="flex items-center gap-4">
-                  <div className="w-4 h-4 bg-gray-200 rounded"></div>
-                  <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
+                  <div className="w-4 h-4 bg-secondary rounded"></div>
+                  <div className="w-16 h-16 bg-secondary rounded-lg"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-4 bg-secondary rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-secondary rounded w-1/2"></div>
                   </div>
-                  <div className="h-4 bg-gray-200 rounded w-20"></div>
-                  <div className="h-4 bg-gray-200 rounded w-16"></div>
+                  <div className="h-4 bg-secondary rounded w-20"></div>
+                  <div className="h-4 bg-secondary rounded w-16"></div>
                 </div>
               ))}
             </div>
@@ -208,50 +208,50 @@ export default function AdminProductsPage() {
         ) : products.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-secondary border-b border-border">
                 <tr>
                   <th className="px-6 py-3 text-left">
                     <input
                       type="checkbox"
                       checked={selectedProducts.size === products.length && products.length > 0}
                       onChange={handleSelectAll}
-                      className="rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                      className="rounded border-border text-primary focus:ring-primary"
                     />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Product
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Category
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Price
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Stock
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {products.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
+                  <tr key={product.id} className="hover:bg-secondary">
                     <td className="px-6 py-4">
                       <input
                         type="checkbox"
                         checked={selectedProducts.has(product.id)}
                         onChange={() => handleSelectProduct(product.id)}
-                        className="rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                        className="rounded border-border text-primary focus:ring-primary"
                       />
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-rose-50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        <div className="w-16 h-16 bg-accent rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                           {product.images.length > 0 ? (
                             <img
                               src={product.images.find(img => img.isMain)?.url || product.images[0].url}
@@ -263,33 +263,33 @@ export default function AdminProductsPage() {
                               }}
                             />
                           ) : (
-                            <Package className="h-6 w-6 text-rose-600" />
+                            <Package className="h-6 w-6 text-primary" />
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-gray-900 truncate">
+                          <p className="text-sm font-medium text-foreground truncate">
                             {product.name}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             {product.designer && `by ${product.designer}`}
                           </p>
                           {product.fabric && (
-                            <span className="inline-block mt-1 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                            <span className="inline-block mt-1 px-2 py-1 text-xs bg-secondary text-muted-foreground rounded-full">
                               {product.fabric}
                             </span>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-6 py-4 text-sm text-foreground">
                       {product.category.name}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-foreground">
                         {formatPriceSimple(product.price)}
                       </div>
                       {product.comparePrice && product.comparePrice > product.price && (
-                        <div className="text-xs text-gray-500 line-through">
+                        <div className="text-xs text-muted-foreground line-through">
                           {formatPriceSimple(product.comparePrice)}
                         </div>
                       )}
@@ -298,10 +298,10 @@ export default function AdminProductsPage() {
                       <span className={cn(
                         "inline-flex px-2 py-1 text-xs font-medium rounded-full",
                         product.stock > 10
-                          ? "bg-green-100 text-green-800"
+                          ? "bg-success/10 text-success"
                           : product.stock > 0
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
+                          ? "bg-warning/10 text-warning"
+                          : "bg-destructive/10 text-destructive"
                       )}>
                         {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
                       </span>
@@ -311,13 +311,13 @@ export default function AdminProductsPage() {
                         <span className={cn(
                           "inline-flex px-2 py-1 text-xs font-medium rounded-full",
                           product.isActive
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
+                            ? "bg-success/10 text-success"
+                            : "bg-muted text-muted-foreground"
                         )}>
                           {product.isActive ? 'Active' : 'Inactive'}
                         </span>
                         {product.isFeatured && (
-                          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary">
                             Featured
                           </span>
                         )}
@@ -339,7 +339,7 @@ export default function AdminProductsPage() {
                           variant="ghost" 
                           size="sm"
                           onClick={() => handleDeleteProduct(product.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -352,9 +352,9 @@ export default function AdminProductsPage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <Package className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-            <p className="text-gray-500 mb-4">Get started by adding your first product</p>
+            <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">No products found</h3>
+            <p className="text-muted-foreground mb-4">Get started by adding your first product</p>
             <Link href="/admin/products/new">
               <Button>Add Product</Button>
             </Link>
