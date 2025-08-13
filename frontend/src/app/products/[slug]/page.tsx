@@ -7,8 +7,6 @@ import {
   ArrowLeft, 
   Heart, 
   Share2, 
- 
-  Star, 
   Truck, 
   Shield, 
   RefreshCw,
@@ -30,7 +28,7 @@ export default function ProductDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
-  const [activeTab, setActiveTab] = useState<'description' | 'details' | 'care' | 'reviews'>('description');
+  const [activeTab, setActiveTab] = useState<'description' | 'details' | 'care'>('description');
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -172,15 +170,6 @@ export default function ProductDetailPage() {
                 <p className="text-gray-600 mb-4">by {product.designer}</p>
               )}
 
-              {/* Rating */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <span className="text-sm text-gray-600">(24 reviews)</span>
-              </div>
             </div>
 
             {/* Pricing */}
@@ -290,8 +279,7 @@ export default function ProductDetailPage() {
               {[
                 { id: 'description', label: 'Description', icon: Info },
                 { id: 'details', label: 'Details', icon: Ruler },
-                { id: 'care', label: 'Care Instructions', icon: Shield },
-                { id: 'reviews', label: 'Reviews (24)', icon: Star }
+                { id: 'care', label: 'Care Instructions', icon: Shield }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -390,37 +378,6 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {activeTab === 'reviews' && (
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Customer Reviews</h3>
-                <div className="space-y-6">
-                  {/* Placeholder reviews */}
-                  {[1, 2, 3].map((review) => (
-                    <div key={review} className="border-b border-gray-200 pb-6 last:border-b-0">
-                      <div className="flex items-center gap-4 mb-3">
-                        <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center">
-                          <span className="text-rose-600 font-medium">A</span>
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-gray-900">Anonymous Customer</h4>
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center">
-                              {[...Array(5)].map((_, i) => (
-                                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              ))}
-                            </div>
-                            <span className="text-sm text-gray-500">2 days ago</span>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-gray-700">
-                        Beautiful product with excellent quality. The fabric is exactly as described and the craftsmanship is outstanding.
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -138,25 +138,15 @@ export default function ProductCard({ product, className }: ProductCardProps) {
         </div>
 
         {/* Pricing */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-gray-900">
-              {formatPriceSimple(product.price)}
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-bold text-gray-900">
+            {formatPriceSimple(product.price)}
+          </span>
+          {product.comparePrice && product.comparePrice > product.price && (
+            <span className="text-sm text-gray-500 line-through">
+              {formatPriceSimple(product.comparePrice)}
             </span>
-            {product.comparePrice && product.comparePrice > product.price && (
-              <span className="text-sm text-gray-500 line-through">
-                {formatPriceSimple(product.comparePrice)}
-              </span>
-            )}
-          </div>
-          
-          {/* Rating placeholder */}
-          <div className="flex items-center gap-1">
-            {[...Array(5)].map((_, i) => (
-              <span key={i} className="text-yellow-400 text-xs">★</span>
-            ))}
-            <span className="text-xs text-gray-500 ml-1">(24)</span>
-          </div>
+          )}
         </div>
 
         {/* Additional Info */}

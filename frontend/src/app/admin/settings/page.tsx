@@ -60,7 +60,6 @@ interface StoreSettings {
   youtubeUrl: string;
   
   // Features
-  enableReviews: boolean;
   enableWishlist: boolean;
   enableCompareProducts: boolean;
   enableGuestCheckout: boolean;
@@ -69,7 +68,6 @@ interface StoreSettings {
   orderNotifications: boolean;
   lowStockNotifications: boolean;
   newCustomerNotifications: boolean;
-  reviewNotifications: boolean;
 }
 
 export default function AdminSettingsPage() {
@@ -116,7 +114,6 @@ export default function AdminSettingsPage() {
     youtubeUrl: '',
     
     // Features
-    enableReviews: true,
     enableWishlist: true,
     enableCompareProducts: true,
     enableGuestCheckout: true,
@@ -124,8 +121,7 @@ export default function AdminSettingsPage() {
     // Notifications
     orderNotifications: true,
     lowStockNotifications: true,
-    newCustomerNotifications: true,
-    reviewNotifications: true
+    newCustomerNotifications: true
   });
 
   const [activeTab, setActiveTab] = useState('general');
@@ -640,22 +636,6 @@ export default function AdminSettingsPage() {
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
-                      id="enableReviews"
-                      checked={settings.enableReviews}
-                      onChange={(e) => handleInputChange('enableReviews', e.target.checked)}
-                      className="rounded border-border text-primary focus:ring-primary"
-                    />
-                    <div>
-                      <label htmlFor="enableReviews" className="text-sm font-medium text-foreground">
-                        Enable Product Reviews
-                      </label>
-                      <p className="text-xs text-muted-foreground">Allow customers to review and rate products</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
                       id="enableWishlist"
                       checked={settings.enableWishlist}
                       onChange={(e) => handleInputChange('enableWishlist', e.target.checked)}
@@ -758,21 +738,6 @@ export default function AdminSettingsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id="reviewNotifications"
-                      checked={settings.reviewNotifications}
-                      onChange={(e) => handleInputChange('reviewNotifications', e.target.checked)}
-                      className="rounded border-border text-primary focus:ring-primary"
-                    />
-                    <div>
-                      <label htmlFor="reviewNotifications" className="text-sm font-medium text-foreground">
-                        Review Notifications
-                      </label>
-                      <p className="text-xs text-muted-foreground">Get notified when customers leave product reviews</p>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
