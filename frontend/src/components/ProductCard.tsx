@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, ShoppingCart, Eye } from 'lucide-react';
+import { Heart, Eye } from 'lucide-react';
 import { Product } from '@/lib/types';
 import { formatPriceSimple, calculateDiscountPercentage, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
@@ -88,19 +88,6 @@ export default function ProductCard({ product, className }: ProductCardProps) {
           </Link>
         </div>
 
-        {/* Add to Cart - Bottom Overlay */}
-        <div className={cn(
-          "absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent transition-all duration-300",
-          isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-full"
-        )}>
-          <Button
-            className="w-full bg-white text-gray-900 hover:bg-gray-100 font-medium"
-            size="sm"
-          >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            Add to Cart
-          </Button>
-        </div>
 
         {/* Stock Indicator */}
         {product.stock === 0 && (

@@ -7,7 +7,7 @@ import {
   ArrowLeft, 
   Heart, 
   Share2, 
-  ShoppingCart, 
+ 
   Star, 
   Truck, 
   Shield, 
@@ -30,7 +30,6 @@ export default function ProductDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
-  const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'description' | 'details' | 'care' | 'reviews'>('description');
 
   useEffect(() => {
@@ -264,47 +263,7 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* Quantity */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Quantity</label>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center border border-gray-300 rounded-lg">
-                  <button
-                    className="px-3 py-2 text-gray-600 hover:text-gray-900"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  >
-                    -
-                  </button>
-                  <span className="px-4 py-2 border-l border-r border-gray-300 bg-gray-50 min-w-[50px] text-center">
-                    {quantity}
-                  </span>
-                  <button
-                    className="px-3 py-2 text-gray-600 hover:text-gray-900"
-                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                  >
-                    +
-                  </button>
-                </div>
-                <span className="text-sm text-gray-600">
-                  {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                </span>
-              </div>
-            </div>
 
-            {/* Add to Cart */}
-            <div className="space-y-3">
-              <Button 
-                size="lg" 
-                className="w-full"
-                disabled={product.stock === 0}
-              >
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
-              </Button>
-              <Button variant="outline" size="lg" className="w-full">
-                Buy Now
-              </Button>
-            </div>
 
             {/* Features */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t">
