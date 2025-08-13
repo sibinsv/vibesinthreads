@@ -17,7 +17,7 @@ import {
   Ban,
   CheckCircle
 } from 'lucide-react';
-import { User, PaginationParams } from '@/lib/types';
+import { User, userService, UserFilters } from '@/lib/api/users';
 import { Button } from '@/components/ui/Button';
 import { formatPriceSimple, cn } from '@/lib/utils';
 
@@ -27,7 +27,7 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
-  const [pagination, setPagination] = useState<PaginationParams>({
+  const [filters, setFilters] = useState<UserFilters>({
     page: 1,
     limit: 10,
     sortBy: 'createdAt',
@@ -37,112 +37,84 @@ export default function AdminUsersPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
 
-  // Mock data for users - replace with actual API call
   useEffect(() => {
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
-        // Mock API call with fake data
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const mockUsers: User[] = [
-          {
-            id: 1,
-            name: 'Sarah Johnson',
-            email: 'sarah.johnson@email.com',
-            role: 'customer',
-            isActive: true,
-            createdAt: '2024-01-10T08:30:00Z',
-            lastLogin: '2024-01-15T14:22:00Z',
-            orderCount: 5,
-            totalSpent: 45000
-          },
-          {
-            id: 2,
-            name: 'Priya Sharma',
-            email: 'priya.sharma@email.com',
-            role: 'customer',
-            isActive: true,
-            createdAt: '2024-01-08T12:15:00Z',
-            lastLogin: '2024-01-14T10:45:00Z',
-            orderCount: 3,
-            totalSpent: 28500
-          },
-          {
-            id: 3,
-            name: 'Admin User',
-            email: 'admin@vibesinthreads.com',
-            role: 'admin',
-            isActive: true,
-            createdAt: '2023-12-01T00:00:00Z',
-            lastLogin: '2024-01-15T16:30:00Z',
-            orderCount: 0,
-            totalSpent: 0
-          },
-          {
-            id: 4,
-            name: 'Anita Desai',
-            email: 'anita.desai@email.com',
-            role: 'customer',
-            isActive: false,
-            createdAt: '2024-01-05T15:20:00Z',
-            lastLogin: '2024-01-10T09:15:00Z',
-            orderCount: 1,
-            totalSpent: 12999
-          },
-          {
-            id: 5,
-            name: 'Rajesh Kumar',
-            email: 'rajesh.kumar@email.com',
-            role: 'customer',
-            isActive: true,
-            createdAt: '2024-01-12T18:45:00Z',
-            lastLogin: '2024-01-15T11:30:00Z',
-            orderCount: 2,
-            totalSpent: 22000
-          }
-        ];
+        const currentFilters = {
+          ...filters,
+          search: searchTerm || undefined,
+          role: roleFilter || undefined,
+          status: statusFilter || undefined
+        };
 
-        setUsers(mockUsers);
-        setTotalUsers(mockUsers.length);
-        setTotalPages(Math.ceil(mockUsers.length / (pagination.limit || 10)));
+        const response = await userService.getUsers(currentFilters);
+        
+        if (response.success && response.data) {
+          setUsers(response.data.users);
+          setTotalUsers(response.data.pagination.totalCount);
+          setTotalPages(response.data.pagination.totalPages);
+        } else {
+          console.error('Failed to fetch users:', response.message);
+          setUsers([]);
+          setTotalUsers(0);
+          setTotalPages(0);
+          
+          // Handle authentication errors
+          if (response.message?.includes('Authentication') || response.message?.includes('Unauthorized')) {
+            alert('Please login again to continue');
+            window.location.href = '/admin/login';
+          }
+        }
       } catch (error) {
         console.error('Error fetching users:', error);
         setUsers([]);
+        setTotalUsers(0);
+        setTotalPages(0);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUsers();
-  }, [pagination, roleFilter, statusFilter, searchTerm]);
+  }, [filters, roleFilter, statusFilter, searchTerm]);
 
   const handleToggleStatus = async (userId: number, newStatus: boolean) => {
     try {
-      console.log(`Toggling user ${userId} status to: ${newStatus}`);
+      const response = await userService.toggleUserStatus(userId, newStatus);
       
-      setUsers(prev => 
-        prev.map(user => 
-          user.id === userId 
-            ? { ...user, isActive: newStatus }
-            : user
-        )
-      );
+      if (response.success) {
+        setUsers(prev => 
+          prev.map(user => 
+            user.id === userId 
+              ? { ...user, isActive: newStatus }
+              : user
+          )
+        );
+        alert(response.message || `User ${newStatus ? 'activated' : 'deactivated'} successfully`);
+      } else {
+        throw new Error(response.message || 'Failed to update user status');
+      }
     } catch (error) {
       console.error('Error updating user status:', error);
-      alert('Failed to update user status');
+      alert(error instanceof Error ? error.message : 'Failed to update user status');
     }
   };
 
   const handleDeleteUser = async (userId: number) => {
     if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       try {
-        console.log('Delete user:', userId);
-        setUsers(prev => prev.filter(user => user.id !== userId));
-        alert('User deleted successfully');
+        const response = await userService.deleteUser(userId);
+        
+        if (response.success) {
+          setUsers(prev => prev.filter(user => user.id !== userId));
+          alert(response.message || 'User deleted successfully');
+        } else {
+          throw new Error(response.message || 'Failed to delete user');
+        }
       } catch (error) {
         console.error('Error deleting user:', error);
-        alert('Failed to delete user');
+        alert(error instanceof Error ? error.message : 'Failed to delete user');
       }
     }
   };
@@ -165,20 +137,10 @@ export default function AdminUsersPage() {
     }
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = !searchTerm || 
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = !roleFilter || user.role === roleFilter;
-    const matchesStatus = statusFilter === '' || 
-      (statusFilter === 'active' && user.isActive) ||
-      (statusFilter === 'inactive' && !user.isActive);
-    
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+  // Since filtering is now done on the server, we can use users directly
+  const filteredUsers = users;
 
-  const customerUsers = users.filter(u => u.role === 'customer');
+  const customerUsers = users.filter(u => u.role === 'user');
   const adminUsers = users.filter(u => u.role === 'admin');
   const activeUsers = users.filter(u => u.isActive);
 
@@ -191,10 +153,12 @@ export default function AdminUsersPage() {
           <p className="text-muted-foreground mt-1">Manage customer accounts and administrators</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="gap-2">
-            <UserPlus className="h-4 w-4" />
-            Add User
-          </Button>
+          <Link href="/admin/users/new">
+            <Button variant="outline" className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              Add User
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -288,10 +252,10 @@ export default function AdminUsersPage() {
 
           {/* Sort */}
           <select
-            value={`${pagination.sortBy}_${pagination.sortOrder}`}
+            value={`${filters.sortBy}_${filters.sortOrder}`}
             onChange={(e) => {
               const [sortBy, sortOrder] = e.target.value.split('_');
-              setPagination(prev => ({ ...prev, sortBy, sortOrder: sortOrder as 'asc' | 'desc', page: 1 }));
+              setFilters(prev => ({ ...prev, sortBy, sortOrder: sortOrder as 'asc' | 'desc', page: 1 }));
             }}
             className="px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
           >
@@ -331,10 +295,10 @@ export default function AdminUsersPage() {
       {/* Results Summary */}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>
-          Showing {filteredUsers.length} of {users.length} users
+          Showing {filteredUsers.length} of {totalUsers} users
         </span>
         <span>
-          Page {pagination.page} of {totalPages}
+          Page {filters.page} of {totalPages}
         </span>
       </div>
 
@@ -526,21 +490,21 @@ export default function AdminUsersPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, (prev.page || 1) - 1) }))}
-              disabled={pagination.page === 1}
+              onClick={() => setFilters(prev => ({ ...prev, page: Math.max(1, (prev.page || 1) - 1) }))}
+              disabled={filters.page === 1}
             >
               Previous
             </Button>
             
             <span className="text-sm text-muted-foreground px-4">
-              Page {pagination.page} of {totalPages}
+              Page {filters.page} of {totalPages}
             </span>
             
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPagination(prev => ({ ...prev, page: Math.min(totalPages, (prev.page || 1) + 1) }))}
-              disabled={pagination.page === totalPages}
+              onClick={() => setFilters(prev => ({ ...prev, page: Math.min(totalPages, (prev.page || 1) + 1) }))}
+              disabled={filters.page === totalPages}
             >
               Next
             </Button>
