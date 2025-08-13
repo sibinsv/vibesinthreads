@@ -7,6 +7,10 @@
     "build": "npx tsc",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
+    "restart": "npm run kill && npm run dev",
+    "clean": "rimraf dist && rimraf node_modules/.cache && rimraf .tsbuildinfo && npm cache clean --force 2>nul || true",
+    "fresh": "npm run clean && npm run restart",
+    "kill": "npx kill-port 5000 2>nul || true",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
@@ -39,7 +43,9 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
+    "kill-port": "^2.0.1",
     "nodemon": "^3.1.10",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   }
