@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, ShoppingBag, Sparkles, Heart, Star } from 'lucide-react';
+import { ShoppingBag, Sparkles, Heart, Star } from 'lucide-react';
 import { Product, Category } from '@/lib/types';
 import { productsApi, categoriesApi } from '@/lib/api';
 import ProductCard from '@/components/ProductCard';
@@ -94,13 +94,7 @@ export default function Home() {
               From exquisite sarees to stunning lehengas, find your perfect style.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/products">
-                <Button size="lg" className="group">
-                  Shop Now
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </Link>
+            <div className="flex justify-center">
               <Button variant="outline" size="lg">
                 Explore Collections
               </Button>
@@ -129,7 +123,7 @@ export default function Home() {
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Shop by Category</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Browse Categories</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Explore our diverse range of traditional and contemporary ethnic wear
             </p>
@@ -143,9 +137,8 @@ export default function Home() {
               </p>
             </div>
             {categories.map((category) => (
-              <Link
+              <div
                 key={category.id}
-                href={`/products?category=${category.slug}`}
                 className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
               >
                 <div className="aspect-[4/3] bg-gradient-to-br from-rose-100 to-pink-100">
@@ -176,11 +169,10 @@ export default function Home() {
                       <span className="text-rose-200 text-sm">
                         {category.productCount} products
                       </span>
-                      <ArrowRight className="h-5 w-5 text-white group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
@@ -189,17 +181,9 @@ export default function Home() {
       {/* Featured Products */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-16">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">Featured Collection</h2>
-              <p className="text-gray-600">Handpicked pieces that blend tradition with modern elegance</p>
-            </div>
-            <Link href="/products?isFeatured=true">
-              <Button variant="outline">
-                View All
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Featured Collection</h2>
+            <p className="text-gray-600">Handpicked pieces that blend tradition with modern elegance</p>
           </div>
 
           {isLoading ? (
