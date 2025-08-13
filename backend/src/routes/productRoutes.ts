@@ -9,6 +9,7 @@ import {
   getFeaturedProducts,
   getProductsByCategory
 } from '../controllers/productController';
+import { authenticateToken, requireStaff } from '../middleware/auth';
 
 const router = Router();
 
@@ -148,8 +149,10 @@ router.get('/slug/:slug', getProductBySlug);
  * @swagger
  * /api/v1/products/{id}:
  *   get:
- *     summary: Get product by ID
+ *     summary: Get product by ID (Admin only)
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -169,19 +172,25 @@ router.get('/slug/:slug', getProductBySlug);
  *                   type: boolean
  *                 data:
  *                   $ref: '#/components/schemas/Product'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Staff access required
  *       404:
  *         $ref: '#/components/responses/404'
  *       500:
  *         $ref: '#/components/responses/500'
  */
-router.get('/:id', getProductById);
+router.get('/:id', authenticateToken, requireStaff, getProductById);
 
 /**
  * @swagger
  * /api/v1/products:
  *   post:
- *     summary: Create a new product
+ *     summary: Create a new product (Admin only)
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -221,19 +230,25 @@ router.get('/:id', getProductById);
  *                   type: boolean
  *                 data:
  *                   $ref: '#/components/schemas/Product'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Staff access required
  *       400:
  *         $ref: '#/components/responses/400'
  *       500:
  *         $ref: '#/components/responses/500'
  */
-router.post('/', createProduct);
+router.post('/', authenticateToken, requireStaff, createProduct);
 
 /**
  * @swagger
  * /api/v1/products/{id}:
  *   put:
- *     summary: Update a product
+ *     summary: Update a product (Admin only)
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -282,14 +297,16 @@ router.post('/', createProduct);
  *       500:
  *         $ref: '#/components/responses/500'
  */
-router.put('/:id', updateProduct);
+router.put('/:id', authenticateToken, requireStaff, updateProduct);
 
 /**
  * @swagger
  * /api/v1/products/{id}:
  *   delete:
- *     summary: Delete a product
+ *     summary: Delete a product (Admin only)
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -314,6 +331,6 @@ router.put('/:id', updateProduct);
  *       500:
  *         $ref: '#/components/responses/500'
  */
-router.delete('/:id', deleteProduct);
+router.delete('/:id', authenticateToken, requireStaff, deleteProduct);
 
 export default router;

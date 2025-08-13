@@ -8,6 +8,7 @@ import {
   deleteCategory,
   getMainCategories
 } from '../controllers/categoryController';
+import { authenticateToken, requireStaff } from '../middleware/auth';
 
 const router = Router();
 
@@ -108,8 +109,10 @@ router.get('/slug/:slug', getCategoryBySlug);
  * @swagger
  * /api/v1/categories/{id}:
  *   get:
- *     summary: Get category by ID
+ *     summary: Get category by ID (Admin only)
  *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -134,14 +137,16 @@ router.get('/slug/:slug', getCategoryBySlug);
  *       500:
  *         $ref: '#/components/responses/500'
  */
-router.get('/:id', getCategoryById);
+router.get('/:id', authenticateToken, requireStaff, getCategoryById);
 
 /**
  * @swagger
  * /api/v1/categories:
  *   post:
- *     summary: Create a new category
+ *     summary: Create a new category (Admin only)
  *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -177,14 +182,16 @@ router.get('/:id', getCategoryById);
  *       500:
  *         $ref: '#/components/responses/500'
  */
-router.post('/', createCategory);
+router.post('/', authenticateToken, requireStaff, createCategory);
 
 /**
  * @swagger
  * /api/v1/categories/{id}:
  *   put:
- *     summary: Update a category
+ *     summary: Update a category (Admin only)
  *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -226,14 +233,16 @@ router.post('/', createCategory);
  *       500:
  *         $ref: '#/components/responses/500'
  */
-router.put('/:id', updateCategory);
+router.put('/:id', authenticateToken, requireStaff, updateCategory);
 
 /**
  * @swagger
  * /api/v1/categories/{id}:
  *   delete:
- *     summary: Delete a category
+ *     summary: Delete a category (Admin only)
  *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -258,6 +267,6 @@ router.put('/:id', updateCategory);
  *       500:
  *         $ref: '#/components/responses/500'
  */
-router.delete('/:id', deleteCategory);
+router.delete('/:id', authenticateToken, requireStaff, deleteCategory);
 
 export default router;
