@@ -85,7 +85,18 @@ export const getProductById = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const createProduct = asyncHandler(async (req: Request, res: Response) => {
-  const product = await productService.createProduct(req.body);
+  // Parse numeric fields from request body to ensure correct data types
+  const productData = {
+    ...req.body,
+    price: parseFloat(req.body.price),
+    categoryId: parseInt(req.body.categoryId),
+    comparePrice: req.body.comparePrice ? parseFloat(req.body.comparePrice) : undefined,
+    stock: req.body.stock ? parseInt(req.body.stock) : 0,
+    isActive: req.body.isActive !== undefined ? req.body.isActive : true,
+    isFeatured: req.body.isFeatured !== undefined ? req.body.isFeatured : false
+  };
+
+  const product = await productService.createProduct(productData);
 
   res.status(201).json(createApiResponse(
     true,
@@ -96,7 +107,15 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
 
 export const updateProduct = asyncHandler(async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
-  const product = await productService.updateProduct(id, req.body);
+  
+  // Parse numeric fields from request body
+  const productData: any = { ...req.body };
+  if (productData.price !== undefined) productData.price = parseFloat(productData.price);
+  if (productData.categoryId !== undefined) productData.categoryId = parseInt(productData.categoryId);
+  if (productData.comparePrice !== undefined) productData.comparePrice = parseFloat(productData.comparePrice);
+  if (productData.stock !== undefined) productData.stock = parseInt(productData.stock);
+
+  const product = await productService.updateProduct(id, productData);
 
   res.json(createApiResponse(
     true,
