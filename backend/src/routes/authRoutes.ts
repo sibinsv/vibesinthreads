@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, register, getProfile } from '../controllers/authController';
+import { login, register, getProfile, adminLogin } from '../controllers/authController';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
@@ -120,6 +120,32 @@ const router = Router();
  *       500:
  *         description: Internal server error
  *
+ * /api/v1/auth/admin/login:
+ *   post:
+ *     summary: Admin login with role verification
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Admin login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Invalid credentials
+ *       403:
+ *         description: Access denied - Admin privileges required
+ *       500:
+ *         description: Internal server error
+ *
  * /api/v1/auth/profile:
  *   get:
  *     summary: Get current user profile
@@ -162,6 +188,7 @@ const router = Router();
  */
 router.post('/register', register);
 router.post('/login', login);
+router.post('/admin/login', adminLogin);
 router.get('/profile', authenticateToken, getProfile);
 
 export default router;

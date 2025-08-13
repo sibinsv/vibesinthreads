@@ -140,6 +140,16 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       { expiresIn: '24h' }
     );
 
+    // Generate refresh token
+    const refreshToken = jwt.sign(
+      { 
+        id: user.id,
+        email: user.email 
+      },
+      process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key',
+      { expiresIn: '7d' }
+    );
+
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
@@ -148,11 +158,112 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       message: 'Login successful',
       data: {
         user: userWithoutPassword,
-        token
+        token,
+        refreshToken
       }
     });
   } catch (error) {
     console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error : undefined
+    });
+  }
+};
+
+/**
+ * Admin login endpoint with role verification
+ */
+export const adminLogin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate required fields
+    if (!email || !password) {
+      res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+      return;
+    }
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+      return;
+    }
+
+    // Check if user is active
+    if (!user.isActive) {
+      res.status(401).json({
+        success: false,
+        message: 'Account is deactivated'
+      });
+      return;
+    }
+
+    // Check if user has admin role
+    if (user.role !== 'admin') {
+      res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin privileges required.'
+      });
+      return;
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+      return;
+    }
+
+    // Generate JWT token with admin role
+    const token = jwt.sign(
+      { 
+        id: user.id,
+        email: user.email,
+        role: user.role
+      },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '24h' }
+    );
+
+    // Generate refresh token
+    const refreshToken = jwt.sign(
+      { 
+        id: user.id,
+        email: user.email 
+      },
+      process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key',
+      { expiresIn: '7d' }
+    );
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+
+    res.status(200).json({
+      success: true,
+      message: 'Admin login successful',
+      data: {
+        user: userWithoutPassword,
+        token,
+        refreshToken
+      }
+    });
+  } catch (error) {
+    console.error('Admin login error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',
