@@ -9,10 +9,20 @@ This is a full-stack e-commerce application for ethnic wear (Vibes in Threads) w
 ## Development Commands
 
 ### Backend
-- Start development server: `npm run fresh` (recommended - includes database setup)
+- Start development server: `npm run fresh` (recommended - includes full database setup)
 - Alternative development: `npm run dev`
-- Database setup: `npm run db:reset` (drops, creates, migrates, and seeds)
-- Seed database: `npm run db:seed`
+
+#### Database Commands
+
+**🔒 Data-Safe Commands (No Data Loss):**
+- **Essential seeding**: `npm run db:seed` (admin user only - production safe)
+- **Development seeding**: `npm run db:seed-dev` (categories, products - dev/test only, idempotent)
+
+**⚠️ Destructive Commands (Will Delete All Data):**
+- **Database reset**: `npm run db:reset` (drops entire database, recreates schema)
+- **Production-safe setup**: `npm run db:setup` (reset + essential seeding only)
+- **Development setup**: `npm run db:setup-dev` (reset + essential + test data)
+- **Fresh start**: `npm run fresh` (full reset with development data)
 
 ### Frontend
 - Start development server: `npm run dev`
@@ -41,6 +51,11 @@ This is a full-stack e-commerce application for ethnic wear (Vibes in Threads) w
 ## Important Notes
 
 - Always run `npm run fresh` for the backend to ensure database is properly set up
+- **Seeding Strategy**: 
+  - `npm run db:seed` - Only creates admin user (production-safe, idempotent)
+  - `npm run db:seed-dev` - Adds test data (categories, products) - development only, idempotent
+  - Environment protection prevents test data seeding in production
+  - All seeding scripts are now idempotent (safe to run multiple times)
 - Admin users require `role: 'admin'` in database
 - Frontend admin login integrates with backend admin authentication endpoint
 - Both servers need to be running for full functionality
