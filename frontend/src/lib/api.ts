@@ -11,6 +11,17 @@ const api = axios.create({
   },
 });
 
+// Add request interceptor to include auth token
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
 // Products API
 export const productsApi = {
   getAll: async (filters?: ProductFilters, pagination?: PaginationParams): Promise<ApiResponse<Product[]>> => {
@@ -97,6 +108,52 @@ export const categoriesApi = {
 
   update: async (id: number, data: any): Promise<ApiResponse<Category>> => {
     const response = await api.put(`/categories/${id}`, data);
+    return response.data;
+  }
+};
+
+// Auth API
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface User {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    user: User;
+    token: string;
+    refreshToken: string;
+  };
+}
+
+export const authApi = {
+  login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
+    const response = await api.post('/auth/login', credentials);
+    return response.data;
+  },
+
+  adminLogin: async (credentials: LoginCredentials): Promise<AuthResponse> => {
+    const response = await api.post('/auth/admin/login', credentials);
+    return response.data;
+  },
+
+  getProfile: async (): Promise<ApiResponse<{ user: User }>> => {
+    const response = await api.get('/auth/profile');
+    return response.data;
+  },
+
+  logout: async (): Promise<ApiResponse<null>> => {
+    const response = await api.post('/auth/logout');
     return response.data;
   }
 };

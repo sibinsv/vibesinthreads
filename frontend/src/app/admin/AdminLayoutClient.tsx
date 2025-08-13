@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   Package, 
   Users, 
@@ -10,10 +10,12 @@ import {
   Settings,
   Home,
   Grid3X3,
-  Plus
+  Plus,
+  LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: BarChart3 },
@@ -29,6 +31,45 @@ export default function AdminLayoutClient({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+
+  const isLoginPage = pathname === '/admin/login';
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && !isLoginPage) {
+      router.push('/admin/login');
+    }
+  }, [isAuthenticated, isLoading, router, isLoginPage]);
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user?.role !== 'admin' && !isLoginPage) {
+      router.push('/admin/login');
+    }
+  }, [user, isAuthenticated, isLoading, router, isLoginPage]);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/admin/login');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  // If it's the login page, render it without the admin layout
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
+  // For other admin pages, check authentication
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,8 +94,25 @@ export default function AdminLayoutClient({
                   View Store
                 </button>
               </Link>
-              <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-                <span className="text-accent-foreground font-medium text-sm">A</span>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-sm font-medium text-foreground">
+                    {user?.firstName} {user?.lastName}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{user?.email}</div>
+                </div>
+                <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                  <span className="text-accent-foreground font-medium text-sm">
+                    {user?.firstName?.[0]?.toUpperCase()}
+                  </span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="text-muted-foreground hover:text-foreground p-1"
+                  title="Logout"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
               </div>
             </div>
           </div>
