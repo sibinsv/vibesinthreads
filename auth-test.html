@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibes in Threads - Authentication Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="email"], input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        .response {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border-left: 4px solid #007bff;
+        }
+        .success {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .token-display {
+            word-break: break-all;
+            font-family: monospace;
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        h2 {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧵 Vibes in Threads - Authentication Test</h1>
+        
+        <!-- Admin Login Section -->
+        <div class="section">
+            <h2>Admin Login Test</h2>
+            <p><strong>Pre-configured Admin Account:</strong></p>
+            <p>Email: admin@vibesinthreads.com</p>
+            <p>Password: admin</p>
+            
+            <div class="form-group">
+                <label for="adminEmail">Email:</label>
+                <input type="email" id="adminEmail" value="admin@vibesinthreads.com">
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">Password:</label>
+                <input type="password" id="adminPassword" value="admin">
+            </div>
+            <button onclick="loginAdmin()">Login as Admin</button>
+            <div id="adminResponse"></div>
+        </div>
+
+        <!-- User Registration Section -->
+        <div class="section">
+            <h2>User Registration Test</h2>
+            <div class="form-group">
+                <label for="regEmail">Email:</label>
+                <input type="email" id="regEmail" placeholder="user@example.com">
+            </div>
+            <div class="form-group">
+                <label for="regPassword">Password:</label>
+                <input type="password" id="regPassword" placeholder="password123">
+            </div>
+            <div class="form-group">
+                <label for="regFirstName">First Name:</label>
+                <input type="text" id="regFirstName" placeholder="John">
+            </div>
+            <div class="form-group">
+                <label for="regLastName">Last Name:</label>
+                <input type="text" id="regLastName" placeholder="Doe">
+            </div>
+            <div class="form-group">
+                <label for="regPhone">Phone (optional):</label>
+                <input type="text" id="regPhone" placeholder="+91 9876543210">
+            </div>
+            <button onclick="registerUser()">Register User</button>
+            <div id="registerResponse"></div>
+        </div>
+
+        <!-- User Login Section -->
+        <div class="section">
+            <h2>User Login Test</h2>
+            <div class="form-group">
+                <label for="loginEmail">Email:</label>
+                <input type="email" id="loginEmail" placeholder="user@example.com">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password:</label>
+                <input type="password" id="loginPassword" placeholder="password123">
+            </div>
+            <button onclick="loginUser()">Login User</button>
+            <div id="loginResponse"></div>
+        </div>
+
+        <!-- Profile Test Section -->
+        <div class="section">
+            <h2>Profile Test (Requires Login)</h2>
+            <p>Use a token from login to test the protected profile endpoint:</p>
+            <div class="form-group">
+                <label for="profileToken">JWT Token:</label>
+                <input type="text" id="profileToken" placeholder="Paste JWT token here">
+            </div>
+            <button onclick="getProfile()">Get Profile</button>
+            <div id="profileResponse"></div>
+        </div>
+
+        <!-- API Documentation Link -->
+        <div class="section">
+            <h2>API Documentation</h2>
+            <p>Complete API documentation is available at:</p>
+            <p><a href="http://localhost:5000/api-docs" target="_blank">http://localhost:5000/api-docs</a></p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api/v1';
+        let currentToken = '';
+
+        async function makeRequest(endpoint, method = 'GET', data = null, token = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+
+            if (token) {
+                options.headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const result = await response.json();
+                return { status: response.status, data: result };
+            } catch (error) {
+                return { error: error.message };
+            }
+        }
+
+        function displayResponse(elementId, response, success = true) {
+            const element = document.getElementById(elementId);
+            const className = success ? 'response success' : 'response error';
+            
+            if (response.error) {
+                element.innerHTML = `<div class="response error">
+                    <strong>Error:</strong> ${response.error}
+                </div>`;
+                return;
+            }
+
+            let content = `<div class="${className}">
+                <strong>Status:</strong> ${response.status}<br>
+                <strong>Response:</strong><br>
+                <pre>${JSON.stringify(response.data, null, 2)}</pre>
+            `;
+
+            // If there's a token in the response, display it separately
+            if (response.data.data && response.data.data.token) {
+                currentToken = response.data.data.token;
+                document.getElementById('profileToken').value = currentToken;
+                content += `<div class="token-display">
+                    <strong>JWT Token:</strong><br>${currentToken}
+                </div>`;
+            }
+
+            content += '</div>';
+            element.innerHTML = content;
+        }
+
+        async function loginAdmin() {
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            const response = await makeRequest('/auth/login', 'POST', {
+                email,
+                password
+            });
+            
+            displayResponse('adminResponse', response, response.data?.success);
+        }
+
+        async function registerUser() {
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const firstName = document.getElementById('regFirstName').value;
+            const lastName = document.getElementById('regLastName').value;
+            const phone = document.getElementById('regPhone').value;
+            
+            const response = await makeRequest('/auth/register', 'POST', {
+                email,
+                password,
+                firstName,
+                lastName,
+                phone: phone || undefined
+            });
+            
+            displayResponse('registerResponse', response, response.data?.success);
+        }
+
+        async function loginUser() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const response = await makeRequest('/auth/login', 'POST', {
+                email,
+                password
+            });
+            
+            displayResponse('loginResponse', response, response.data?.success);
+        }
+
+        async function getProfile() {
+            const token = document.getElementById('profileToken').value;
+            
+            if (!token) {
+                displayResponse('profileResponse', { error: 'Please provide a JWT token' }, false);
+                return;
+            }
+            
+            const response = await makeRequest('/auth/profile', 'GET', null, token);
+            displayResponse('profileResponse', response, response.data?.success);
+        }
+    </script>
+</body>
+</html>

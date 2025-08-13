@@ -1,9 +1,29 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seed...');
+
+  // Create admin user
+  console.log('Creating admin user...');
+  const hashedPassword = await bcrypt.hash('admin', 12);
+  
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@vibesinthreads.com' },
+    update: {},
+    create: {
+      email: 'admin@vibesinthreads.com',
+      password: hashedPassword,
+      firstName: 'Admin',
+      lastName: 'User',
+      role: 'admin',
+      isActive: true
+    }
+  });
+
+  console.log('✅ Created admin user:', adminUser.email);
 
   // Create main categories
   const categories = await Promise.all([

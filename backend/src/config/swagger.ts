@@ -24,6 +24,13 @@ const options: swaggerJSDoc.Options = {
       }
     ],
     components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      },
       schemas: {
         Product: {
           type: 'object',
