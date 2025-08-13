@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingBag, Sparkles, Heart, Star } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Sparkles, Heart, Star } from 'lucide-react';
 import { Product, Category } from '@/lib/types';
 import { productsApi, categoriesApi } from '@/lib/api';
 import ProductCard from '@/components/ProductCard';
@@ -95,9 +95,11 @@ export default function Home() {
             </p>
             
             <div className="flex justify-center">
-              <Button variant="outline" size="lg">
-                Explore Collections
-              </Button>
+              <Link href="/products">
+                <Button variant="outline" size="lg" className="cursor-pointer">
+                  Explore Collections
+                </Button>
+              </Link>
             </div>
 
             {/* Stats */}
@@ -137,8 +139,9 @@ export default function Home() {
               </p>
             </div>
             {categories.map((category) => (
-              <div
+              <Link
                 key={category.id}
+                href={`/products?category=${category.slug}`}
                 className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
               >
                 <div className="aspect-[4/3] bg-gradient-to-br from-rose-100 to-pink-100">
@@ -169,10 +172,11 @@ export default function Home() {
                       <span className="text-rose-200 text-sm">
                         {category.productCount} products
                       </span>
+                      <ArrowRight className="h-5 w-5 text-white group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
