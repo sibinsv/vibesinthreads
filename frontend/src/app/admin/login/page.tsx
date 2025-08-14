@@ -120,10 +120,11 @@ export default function AdminLoginPage() {
             </div>
 
             {/* Submit Button */}
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full"
+              size="lg"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
@@ -136,18 +137,7 @@ export default function AdminLoginPage() {
               ) : (
                 'Sign In'
               )}
-            </button>
-
-            {/* Demo Credentials */}
-            <div className="text-center">
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 backdrop-blur-sm">
-                <p className="text-sm text-blue-400 font-medium mb-1">Demo Credentials</p>
-                <p className="text-xs text-gray-400">
-                  Email: admin@vibesinthreads.com<br />
-                  Password: admin
-                </p>
-              </div>
-            </div>
+            </Button>
           </form>
         </div>
 
