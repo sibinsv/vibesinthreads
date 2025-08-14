@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import Image from 'next/image';
 import { useDropzone } from 'react-dropzone';
 import { Upload, X, Image as ImageIcon, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from './Button';
@@ -254,11 +255,18 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             {images.map((image, index) => (
               <div key={image.id} className="relative bg-card border border-border rounded-lg overflow-hidden">
                 {/* Image */}
-                <div className="relative aspect-square">
-                  <img
+                <div className="relative w-full h-64 bg-gray-100">
+                  <Image
                     src={image.thumbnailUrl || image.url}
                     alt={image.altText || image.filename}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover rounded"
+                    onLoad={() => {
+                      console.log('Image loaded successfully:', image.url);
+                    }}
+                    onError={() => {
+                      console.error('Image failed to load:', image.url);
+                    }}
                   />
                   
                   {/* Main image badge */}

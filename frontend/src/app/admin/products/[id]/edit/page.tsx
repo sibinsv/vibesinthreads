@@ -96,6 +96,15 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
         if (productResponse.success && productResponse.data) {
           const product = productResponse.data;
+          
+          // Format image URL - ensure it's a complete URL
+          const getFullImageUrl = (imagePath: string) => {
+            if (!imagePath) return '';
+            if (imagePath.startsWith('http')) return imagePath;
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+            return imagePath.startsWith('/') ? `${baseUrl}${imagePath}` : `${baseUrl}/${imagePath}`;
+          };
+          
           setFormData({
             name: product.name,
             slug: product.slug,
@@ -117,7 +126,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             categoryId: product.category.id,
             images: product.images.map((img, index) => ({
               id: `existing-${img.id}`,
-              url: img.url,
+              url: getFullImageUrl(img.url),
               filename: `product-image-${index + 1}`,
               size: 0,
               altText: img.altText || '',

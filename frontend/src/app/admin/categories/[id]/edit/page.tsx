@@ -67,13 +67,22 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
 
         if (categoryResponse.success && categoryResponse.data) {
           const category = categoryResponse.data;
+          
+          // Format image URL - ensure it's a complete URL
+          const getFullImageUrl = (imagePath: string) => {
+            if (!imagePath) return '';
+            if (imagePath.startsWith('http')) return imagePath;
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+            return imagePath.startsWith('/') ? `${baseUrl}${imagePath}` : `${baseUrl}/${imagePath}`;
+          };
+          
           setFormData({
             name: category.name,
             slug: category.slug,
             description: category.description || '',
             images: category.image ? [{
               id: `existing-${Date.now()}`,
-              url: category.image,
+              url: getFullImageUrl(category.image),
               filename: 'category-image',
               size: 0,
               isMain: true,
