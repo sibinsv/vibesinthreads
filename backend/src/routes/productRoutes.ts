@@ -7,7 +7,10 @@ import {
   updateProduct,
   deleteProduct,
   getFeaturedProducts,
-  getProductsByCategory
+  getProductsByCategory,
+  addProductImage,
+  removeProductImage,
+  updateProductImages
 } from '../controllers/productController';
 import { authenticateToken, requireStaff } from '../middleware/auth';
 
@@ -332,5 +335,10 @@ router.put('/:id', authenticateToken, requireStaff, updateProduct);
  *         $ref: '#/components/responses/500'
  */
 router.delete('/:id', authenticateToken, requireStaff, deleteProduct);
+
+// Product image management routes
+router.post('/:id/images', authenticateToken, requireStaff, addProductImage);
+router.delete('/:id/images/:imageId', authenticateToken, requireStaff, removeProductImage);
+router.put('/:id/images', authenticateToken, requireStaff, updateProductImages);
 
 export default router;

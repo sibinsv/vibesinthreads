@@ -7,12 +7,24 @@ import { ArrowLeft, Save, X, Upload, Grid3X3 } from 'lucide-react';
 import { Category } from '@/lib/types';
 import { categoriesApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
+import { ImageUpload } from '@/components/ui/ImageUpload';
+
+interface UploadedImage {
+  id: string;
+  url: string;
+  thumbnailUrl?: string;
+  filename: string;
+  size: number;
+  isMain?: boolean;
+  altText?: string;
+  sortOrder?: number;
+}
 
 interface CategoryFormData {
   name: string;
   slug: string;
   description: string;
-  image: string;
+  images: UploadedImage[];
   parentId: number | null;
 }
 
@@ -22,7 +34,7 @@ export default function NewCategoryPage() {
     name: '',
     slug: '',
     description: '',
-    image: '',
+    images: [],
     parentId: null
   });
   const [categories, setCategories] = useState<Category[]>([]);
@@ -74,17 +86,37 @@ export default function NewCategoryPage() {
 
     setIsSaving(true);
     try {
-      // This would need to be implemented in the API
-      console.log('Creating category:', formData);
+      // Prepare category data with first image URL if available
+      const categoryData = {
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description,
+        image: formData.images.length > 0 ? formData.images[0].url : '',
+        parentId: formData.parentId
+      };
       
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Creating category:', categoryData);
       
-      alert('Category created successfully!');
-      router.push('/admin/categories');
+      // Call the real API to create the category
+      const response = await categoriesApi.create(categoryData);
+      
+      if (response.success) {
+        alert('Category created successfully!');
+        router.push('/admin/categories');
+      } else {
+        throw new Error(response.error || 'Failed to create category');
+      }
     } catch (error) {
       console.error('Error creating category:', error);
-      alert('Failed to create category. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create category. Please try again.';
+      
+      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+        alert('Authentication required. Please log in as admin first.');
+      } else if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
+        alert('Admin access required. Please log in with admin credentials.');
+      } else {
+        alert(`Failed to create category: ${errorMessage}`);
+      }
     } finally {
       setIsSaving(false);
     }
@@ -217,66 +249,12 @@ export default function NewCategoryPage() {
           <div className="bg-card rounded-lg shadow-sm border border-border p-6">
             <h2 className="text-lg font-semibold text-foreground mb-6">Category Image</h2>
             
-            <div className="space-y-4">
-              {/* Image URL Input */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Image URL
-                </label>
-                <input
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) => handleInputChange('image', e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
-                />
-              </div>
-
-              {/* Image Preview */}
-              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                {formData.image ? (
-                  <div className="space-y-4">
-                    <img
-                      src={formData.image}
-                      alt="Category preview"
-                      className="mx-auto h-32 w-32 object-cover rounded-lg"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.parentElement!.innerHTML = `
-                          <div class="h-32 w-32 bg-accent rounded-lg flex items-center justify-center mx-auto">
-                            <svg class="h-8 w-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          </div>
-                          <p class="text-sm text-destructive mt-2">Failed to load image</p>
-                        `;
-                      }}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleInputChange('image', '')}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      Remove Image
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="h-32 w-32 bg-accent rounded-lg flex items-center justify-center mx-auto">
-                      <Grid3X3 className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">No image selected</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Enter an image URL above to preview
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+            <ImageUpload
+              images={formData.images}
+              onImagesChange={(images) => handleInputChange('images', images)}
+              maxImages={1}
+              className="w-full"
+            />
           </div>
         </div>
 

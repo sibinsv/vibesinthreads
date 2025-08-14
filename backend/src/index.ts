@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import path from 'path';
 import swaggerUi from 'swagger-ui-express';
 import { connectDatabase } from './config/database';
 import routes from './routes';
@@ -74,6 +75,9 @@ app.get('/health', (req, res) => {
  *                   type: string
  *                   example: '1.0.0'
  */
+
+// Static file serving for uploads
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // API routes
 app.use('/api/v1', routes);

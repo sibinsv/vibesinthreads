@@ -157,3 +157,47 @@ export const getProductsByCategory = asyncHandler(async (req: Request, res: Resp
     'Products by category retrieved successfully'
   ));
 });
+
+export const addProductImage = asyncHandler(async (req: Request, res: Response) => {
+  const productId = parseInt(req.params.id);
+  const { url, altText, isMain, sortOrder } = req.body;
+
+  await productService.addProductImage(productId, {
+    url,
+    altText,
+    isMain,
+    sortOrder
+  });
+
+  res.json(createApiResponse(
+    true,
+    null,
+    'Product image added successfully'
+  ));
+});
+
+export const removeProductImage = asyncHandler(async (req: Request, res: Response) => {
+  const productId = parseInt(req.params.id);
+  const imageId = parseInt(req.params.imageId);
+
+  await productService.removeProductImage(productId, imageId);
+
+  res.json(createApiResponse(
+    true,
+    null,
+    'Product image removed successfully'
+  ));
+});
+
+export const updateProductImages = asyncHandler(async (req: Request, res: Response) => {
+  const productId = parseInt(req.params.id);
+  const { images } = req.body;
+
+  await productService.updateProductImages(productId, images);
+
+  res.json(createApiResponse(
+    true,
+    null,
+    'Product images updated successfully'
+  ));
+});

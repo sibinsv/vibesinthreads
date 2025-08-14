@@ -7,7 +7,19 @@ import { ArrowLeft, Save, X, Upload, Package, Eye, Trash2, Plus } from 'lucide-r
 import { Product, Category } from '@/lib/types';
 import { productsApi, categoriesApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { formatPriceSimple } from '@/lib/utils';
+
+interface UploadedImage {
+  id: string;
+  url: string;
+  thumbnailUrl?: string;
+  filename: string;
+  size: number;
+  isMain?: boolean;
+  altText?: string;
+  sortOrder?: number;
+}
 
 interface ProductFormData {
   name: string;
@@ -28,11 +40,7 @@ interface ProductFormData {
   metaTitle: string;
   metaDescription: string;
   categoryId: number;
-  images: Array<{
-    url: string;
-    altText: string;
-    isMain: boolean;
-  }>;
+  images: UploadedImage[];
 }
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -64,7 +72,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [newImageUrl, setNewImageUrl] = useState('');
 
   // Initialize productId from params
   useEffect(() => {
@@ -108,10 +115,14 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             metaTitle: product.metaTitle || '',
             metaDescription: product.metaDescription || '',
             categoryId: product.category.id,
-            images: product.images.map(img => ({
+            images: product.images.map((img, index) => ({
+              id: `existing-${img.id}`,
               url: img.url,
+              filename: `product-image-${index + 1}`,
+              size: 0,
               altText: img.altText || '',
-              isMain: img.isMain
+              isMain: img.isMain,
+              sortOrder: img.sortOrder || index
             }))
           });
         } else {
@@ -153,44 +164,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     }
   };
 
-  const handleImageAdd = () => {
-    if (newImageUrl.trim()) {
-      const newImage = {
-        url: newImageUrl.trim(),
-        altText: formData.name,
-        isMain: formData.images.length === 0
-      };
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, newImage]
-      }));
-      setNewImageUrl('');
-    }
-  };
-
-  const handleImageRemove = (index: number) => {
-    setFormData(prev => {
-      const newImages = prev.images.filter((_, i) => i !== index);
-      // If we removed the main image, make the first image main
-      if (newImages.length > 0 && !newImages.some(img => img.isMain)) {
-        newImages[0].isMain = true;
-      }
-      return {
-        ...prev,
-        images: newImages
-      };
-    });
-  };
-
-  const handleSetMainImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.map((img, i) => ({
-        ...img,
-        isMain: i === index
-      }))
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -518,90 +491,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             <div className="bg-card rounded-lg shadow-sm border border-border p-6">
               <h2 className="text-lg font-semibold text-foreground mb-6">Product Images</h2>
               
-              {/* Add New Image */}
-              <div className="mb-6">
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    placeholder="Enter image URL"
-                    className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleImageAdd}
-                    className="gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Image
-                  </Button>
-                </div>
-              </div>
-
-              {/* Image List */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {formData.images.map((image, index) => (
-                  <div key={index} className="relative bg-accent rounded-lg p-4">
-                    <div className="aspect-square mb-3 bg-background rounded-lg overflow-hidden">
-                      <img
-                        src={image.url}
-                        alt={image.altText}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = `https://picsum.photos/200/200?random=${index}`;
-                        }}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <input
-                        type="text"
-                        value={image.altText}
-                        onChange={(e) => {
-                          const newImages = [...formData.images];
-                          newImages[index].altText = e.target.value;
-                          setFormData(prev => ({ ...prev, images: newImages }));
-                        }}
-                        placeholder="Alt text"
-                        className="w-full px-2 py-1 text-xs border border-border rounded focus:outline-none focus:ring-1 focus:ring-primary bg-background text-foreground"
-                      />
-                      
-                      <div className="flex items-center justify-between">
-                        <label className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            name="mainImage"
-                            checked={image.isMain}
-                            onChange={() => handleSetMainImage(index)}
-                            className="text-primary focus:ring-primary"
-                          />
-                          <span className="text-xs text-foreground">Main</span>
-                        </label>
-                        
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleImageRemove(index)}
-                          className="text-destructive hover:text-destructive h-6 w-6 p-0"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {formData.images.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No images added yet</p>
-                  <p className="text-sm">Add some product images to showcase your product</p>
-                </div>
-              )}
+              <ImageUpload
+                images={formData.images}
+                onImagesChange={(images) => handleInputChange('images', images)}
+                maxImages={10}
+                className="w-full"
+              />
             </div>
 
             {/* SEO */}

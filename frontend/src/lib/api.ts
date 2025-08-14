@@ -106,8 +106,18 @@ export const categoriesApi = {
     return response.data;
   },
 
+  create: async (data: any): Promise<ApiResponse<Category>> => {
+    const response = await api.post('/categories', data);
+    return response.data;
+  },
+
   update: async (id: number, data: any): Promise<ApiResponse<Category>> => {
     const response = await api.put(`/categories/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: number): Promise<ApiResponse<null>> => {
+    const response = await api.delete(`/categories/${id}`);
     return response.data;
   }
 };
@@ -155,6 +165,97 @@ export const authApi = {
   logout: async (): Promise<ApiResponse<null>> => {
     const response = await api.post('/auth/logout');
     return response.data;
+  }
+};
+
+// Upload API
+export const uploadApi = {
+  uploadImage: async (file: File): Promise<ApiResponse<any>> => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      // Use fetch for file uploads to avoid axios issues with FormData
+      const response = await fetch(`${API_BASE_URL}/upload/image`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          // Don't set Content-Type header, let browser set it with boundary
+          ...(typeof window !== 'undefined' && localStorage.getItem('authToken') && {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          })
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorJson.message || errorMessage;
+        } catch {
+          // If not JSON, use the raw text or status message
+          errorMessage = errorText || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Upload API Error:', error);
+      
+      // Return a properly formatted error response
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Upload failed - please check if the server is running',
+        data: null
+      };
+    }
+  },
+
+  uploadImages: async (files: File[]): Promise<ApiResponse<any[]>> => {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('images', file);
+    });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/upload/images`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          ...(typeof window !== 'undefined' && localStorage.getItem('authToken') && {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          })
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorJson.message || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Upload Images API Error:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Batch upload failed - please check if the server is running',
+        data: null
+      };
+    }
   }
 };
 

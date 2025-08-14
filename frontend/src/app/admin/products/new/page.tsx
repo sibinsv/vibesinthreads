@@ -7,10 +7,22 @@ import { ArrowLeft, Save, X, Plus, Upload } from 'lucide-react';
 import { Category, CreateProductData } from '@/lib/types';
 import { categoriesApi, productsApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { generateSlug } from '@/lib/utils';
 
+interface UploadedImage {
+  id: string;
+  url: string;
+  thumbnailUrl?: string;
+  filename: string;
+  size: number;
+  isMain?: boolean;
+  altText?: string;
+  sortOrder?: number;
+}
+
 interface ProductFormData extends CreateProductData {
-  images: string[];
+  images: UploadedImage[];
   variants: Array<{
     type: string;
     value: string;
@@ -362,6 +374,18 @@ export default function NewProductPage() {
                   placeholder="Care and maintenance instructions"
                 />
               </div>
+            </div>
+
+            {/* Product Images */}
+            <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-6">Product Images</h2>
+              
+              <ImageUpload
+                images={formData.images}
+                onImagesChange={(images) => handleInputChange('images', images)}
+                maxImages={10}
+                className="w-full"
+              />
             </div>
           </div>
 
