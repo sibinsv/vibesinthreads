@@ -18,3 +18,7 @@ coverage/
 dev.db
 dev.db-journal
 /src/generated/prisma
+
+# User uploads - should not be tracked in version control
+uploads/
+uploads/**
