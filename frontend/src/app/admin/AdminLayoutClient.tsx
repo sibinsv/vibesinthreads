@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   Package, 
@@ -78,8 +79,14 @@ export default function AdminLayoutClient({
         <div className="px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <Link href="/" className="flex items-center gap-2">
-                <Home className="h-6 w-6 text-primary" />
+              <Link href="/" className="flex items-center gap-3">
+                <Image
+                  src="/images/logo.png"
+                  alt="Vibes in Threads"
+                  width={60}
+                  height={60}
+                  className="w-15 h-15 object-contain"
+                />
                 <span className="font-bold text-xl">
                   <span className="text-foreground">Vibes</span>
                   <span className="text-primary"> Admin</span>

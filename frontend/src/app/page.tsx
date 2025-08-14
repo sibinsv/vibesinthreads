@@ -75,11 +75,16 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-rose-50 to-pink-50 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-rose-600/20 to-pink-600/20" />
-        <div className="relative container mx-auto px-4 py-20 lg:py-32">
+        <div className="relative container mx-auto px-4 py-8 lg:py-12">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-sm text-rose-700 mb-6">
-              <Sparkles className="h-4 w-4" />
-              Premium Indian Ethnic Fashion
+            <div className="inline-flex items-center justify-center mb-6">
+              <Image
+                src="/images/logo.png"
+                alt="Vibes in Threads"
+                width={200}
+                height={200}
+                className="w-48 h-48 object-contain"
+              />
             </div>
             
             <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
