@@ -197,7 +197,6 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
         sizePreferences: true,
         createdAt: true,
         updatedAt: true,
-        lastLoginAt: true,
         _count: {
           select: {
             orders: true
@@ -217,15 +216,15 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
     // Get order statistics
     const orders = await prisma.order.findMany({
       where: { userId: user.id, status: 'delivered' },
-      select: { total: true }
+      select: { totalAmount: true }
     });
 
-    const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
+    const totalSpent = orders.reduce((sum, order) => sum + order.totalAmount, 0);
 
     const userWithStats = {
       ...user,
       name: `${user.firstName} ${user.lastName}`,
-      lastLogin: user.lastLoginAt,
+      lastLogin: null,
       orderCount: user._count.orders,
       totalSpent
     };
@@ -408,10 +407,10 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     }
 
     // Validate role if provided
-    if (role && !['user', 'admin', 'staff'].includes(role)) {
+    if (role && !['customer', 'admin', 'staff'].includes(role)) {
       res.status(400).json({
         success: false,
-        message: 'Invalid role. Must be user, admin, or staff'
+        message: 'Invalid role. Must be customer, admin, or staff'
       });
       return;
     }
