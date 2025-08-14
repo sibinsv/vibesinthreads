@@ -87,10 +87,10 @@ interface UserFilters {
   sortOrder?: 'asc' | 'desc';
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 const getAuthHeaders = (): Record<string, string> => {
-  const token = localStorage.getItem('adminToken');
+  const token = localStorage.getItem('authToken');
   return {
     'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Bearer ${token}` })
@@ -112,7 +112,7 @@ export const userService = {
       });
 
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/admin/users?${queryParams.toString()}`,
+        `${API_BASE_URL}/admin/users?${queryParams.toString()}`,
         {
           method: 'GET',
           headers: getAuthHeaders()
@@ -144,7 +144,7 @@ export const userService = {
   async getUserById(id: number): Promise<ApiResponse<{ user: User }>> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/admin/users/${id}`,
+        `${API_BASE_URL}/admin/users/${id}`,
         {
           method: 'GET',
           headers: getAuthHeaders()
@@ -176,7 +176,7 @@ export const userService = {
   async createUser(userData: CreateUserData): Promise<ApiResponse<{ user: User }>> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/admin/users`,
+        `${API_BASE_URL}/admin/users`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -210,7 +210,7 @@ export const userService = {
   async updateUser(id: number, userData: UpdateUserData): Promise<ApiResponse<{ user: User }>> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/admin/users/${id}`,
+        `${API_BASE_URL}/admin/users/${id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -244,7 +244,7 @@ export const userService = {
   async toggleUserStatus(id: number, isActive: boolean): Promise<ApiResponse<{ user: Partial<User> }>> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/admin/users/${id}/status`,
+        `${API_BASE_URL}/admin/users/${id}/status`,
         {
           method: 'PATCH',
           headers: getAuthHeaders(),
@@ -278,7 +278,7 @@ export const userService = {
   async deleteUser(id: number): Promise<ApiResponse<void>> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/admin/users/${id}`,
+        `${API_BASE_URL}/admin/users/${id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders()

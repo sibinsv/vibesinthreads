@@ -65,7 +65,8 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
     if (sortBy === 'name') {
       orderBy = { firstName: sortOrder };
     } else if (sortBy === 'totalSpent') {
-      orderBy = { totalSpent: sortOrder };
+      // Can't sort by calculated field in database, default to createdAt
+      orderBy = { createdAt: sortOrder };
     } else {
       orderBy = { [sortBy as string]: sortOrder };
     }
@@ -89,7 +90,6 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
           sizePreferences: true,
           createdAt: true,
           updatedAt: true,
-          lastLoginAt: true,
           _count: {
             select: {
               orders: true
@@ -108,10 +108,10 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
       users.map(async (user) => {
         const orders = await prisma.order.findMany({
           where: { userId: user.id, status: 'delivered' },
-          select: { total: true }
+          select: { totalAmount: true }
         });
 
-        const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
+        const totalSpent = orders.reduce((sum, order) => sum + order.totalAmount, 0);
 
         return {
           id: user.id,
@@ -129,7 +129,7 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
           sizePreferences: user.sizePreferences,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
-          lastLogin: user.lastLoginAt,
+          lastLogin: null,
           orderCount: user._count.orders,
           totalSpent
         };
@@ -154,10 +154,12 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
     });
   } catch (error) {
     console.error('Get all users error:', error);
+    console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     res.status(500).json({
       success: false,
       message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? error : undefined
+      error: error
     });
   }
 };
@@ -253,7 +255,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       firstName,
       lastName,
       phone,
-      role = 'user',
+      role = 'customer',
       dateOfBirth,
       gender,
       preferredOccasions,
@@ -271,10 +273,10 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
     }
 
     // Validate role
-    if (!['user', 'admin', 'staff'].includes(role)) {
+    if (!['customer', 'admin', 'staff'].includes(role)) {
       res.status(400).json({
         success: false,
-        message: 'Invalid role. Must be user, admin, or staff'
+        message: 'Invalid role. Must be customer, admin, or staff'
       });
       return;
     }

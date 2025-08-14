@@ -57,14 +57,14 @@ export default function EditUserPage() {
 
   const fetchUser = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('authToken');
       if (!token) {
         router.push('/admin/login');
         return;
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/admin/users/${userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/admin/users/${userId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -109,10 +109,10 @@ export default function EditUserPage() {
 
     setIsSaving(true);
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('authToken');
       
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/admin/users/${userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/admin/users/${userId}`,
         {
           method: 'PUT',
           headers: {

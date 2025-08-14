@@ -79,14 +79,14 @@ export default function UserDetailPage() {
       setIsLoading(true);
       setError(null);
       
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('authToken');
       if (!token) {
         router.push('/admin/login');
         return;
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/admin/users/${userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/admin/users/${userId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -117,10 +117,10 @@ export default function UserDetailPage() {
 
     try {
       setIsUpdatingStatus(true);
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('authToken');
       
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/v1/admin/users/${userId}/status`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/admin/users/${userId}/status`,
         {
           method: 'PATCH',
           headers: {
