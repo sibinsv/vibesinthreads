@@ -26,10 +26,22 @@ const nextConfig: NextConfig = {
         pathname: '/uploads/**',
       },
       {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '5000',
+        pathname: '/api/v1/images/**',
+      },
+      {
         protocol: 'https',
         hostname: 'vibesinthreads.store',
         port: '',
         pathname: '/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'vibesinthreads.store',
+        port: '',
+        pathname: '/api/v1/images/**',
       },
     ],
   },
