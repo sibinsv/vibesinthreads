@@ -236,11 +236,12 @@ export default function NewProductPage() {
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={isSaving}
+            isLoading={isSaving}
+            loadingText="Saving Product..."
             className="gap-2"
           >
             <Save className="h-4 w-4" />
-            {isSaving ? 'Saving...' : 'Save Product'}
+            Save Product
           </Button>
         </div>
       </div>

@@ -255,11 +255,12 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={isSaving}
+            isLoading={isSaving}
+            loadingText="Updating Category..."
             className="gap-2"
           >
             <Save className="h-4 w-4" />
-            {isSaving ? 'Updating...' : 'Update Category'}
+            Update Category
           </Button>
         </div>
       </div>

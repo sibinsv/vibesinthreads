@@ -31,6 +31,7 @@ export default function AdminCategoriesPage() {
     count?: number;
   }>({ isOpen: false, categoryId: null, categoryName: '', isMultiple: false });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingCategoryIds, setDeletingCategoryIds] = useState<Set<number>>(new Set());
   
   const toast = useToast();
 
@@ -102,6 +103,7 @@ export default function AdminCategoriesPage() {
       if (deleteModal.isMultiple) {
         // Handle bulk delete
         const ids = Array.from(selectedCategories);
+        setDeletingCategoryIds(new Set(ids));
         const response = await categoriesApi.deleteMultiple(ids);
         if (response.success) {
           const { deleted, failed, warnings } = response.data;
@@ -127,6 +129,7 @@ export default function AdminCategoriesPage() {
         }
       } else {
         // Handle single delete
+        setDeletingCategoryIds(new Set([deleteModal.categoryId!]));
         const response = await categoriesApi.delete(deleteModal.categoryId!);
         if (response.success) {
           toast.success('Category deleted successfully');
@@ -141,6 +144,7 @@ export default function AdminCategoriesPage() {
       toast.error(`Failed to delete category: ${getAdminErrorMessage(error)}`);
     } finally {
       setIsDeleting(false);
+      setDeletingCategoryIds(new Set());
       setDeleteModal({ isOpen: false, categoryId: null, categoryName: '', isMultiple: false });
     }
   };
@@ -206,6 +210,8 @@ export default function AdminCategoriesPage() {
                   size="sm" 
                   className="text-destructive hover:text-destructive"
                   onClick={handleDeleteSelected}
+                  isLoading={isDeleting}
+                  loadingText="Deleting..."
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Delete Selected
@@ -347,6 +353,8 @@ export default function AdminCategoriesPage() {
                           size="sm"
                           onClick={() => handleDeleteCategory(category.id)}
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          isLoading={deletingCategoryIds.has(category.id)}
+                          loadingText=""
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

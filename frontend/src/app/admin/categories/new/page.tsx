@@ -156,11 +156,12 @@ export default function NewCategoryPage() {
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={isSaving}
+            isLoading={isSaving}
+            loadingText="Creating Category..."
             className="gap-2"
           >
             <Save className="h-4 w-4" />
-            {isSaving ? 'Creating...' : 'Create Category'}
+            Create Category
           </Button>
         </div>
       </div>

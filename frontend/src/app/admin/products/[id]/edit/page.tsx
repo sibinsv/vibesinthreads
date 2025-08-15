@@ -305,11 +305,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={isSaving}
+            isLoading={isSaving}
+            loadingText="Updating Product..."
             className="gap-2"
           >
             <Save className="h-4 w-4" />
-            {isSaving ? 'Updating...' : 'Update Product'}
+            Update Product
           </Button>
         </div>
       </div>

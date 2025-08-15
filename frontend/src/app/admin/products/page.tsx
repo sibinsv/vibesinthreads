@@ -42,6 +42,7 @@ export default function AdminProductsPage() {
     count?: number;
   }>({ isOpen: false, productId: null, productName: '', isMultiple: false });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingProductIds, setDeletingProductIds] = useState<Set<number>>(new Set());
   
   const toast = useToast();
 
@@ -116,6 +117,7 @@ export default function AdminProductsPage() {
       if (deleteModal.isMultiple) {
         // Handle bulk delete
         const ids = Array.from(selectedProducts);
+        setDeletingProductIds(new Set(ids));
         const response = await productsApi.deleteMultiple(ids);
         if (response.success) {
           const { deleted, failed } = response.data;
@@ -132,6 +134,7 @@ export default function AdminProductsPage() {
         }
       } else {
         // Handle single delete
+        setDeletingProductIds(new Set([deleteModal.productId!]));
         const response = await productsApi.delete(deleteModal.productId!);
         if (response.success) {
           toast.success('Product deleted successfully');
@@ -146,6 +149,7 @@ export default function AdminProductsPage() {
       toast.error(`Failed to delete product: ${getAdminErrorMessage(error)}`);
     } finally {
       setIsDeleting(false);
+      setDeletingProductIds(new Set());
       setDeleteModal({ isOpen: false, productId: null, productName: '', isMultiple: false });
     }
   };
@@ -235,6 +239,8 @@ export default function AdminProductsPage() {
                   size="sm" 
                   className="text-destructive hover:text-destructive"
                   onClick={handleDeleteSelected}
+                  isLoading={isDeleting}
+                  loadingText="Deleting..."
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Delete Selected
@@ -409,6 +415,8 @@ export default function AdminProductsPage() {
                           size="sm"
                           onClick={() => handleDeleteProduct(product.id)}
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          isLoading={deletingProductIds.has(product.id)}
+                          loadingText=""
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
