@@ -35,8 +35,8 @@ This is a full-stack e-commerce application for ethnic wear (Vibes in Threads) w
 - Admin login endpoint: `POST /api/v1/auth/admin/login`
 - Regular login endpoint: `POST /api/v1/auth/login`
 - Default admin credentials:
-  - Email: `admin@vibesinthreads.com`
-  - Password: `admin`
+  - Email: `admin@vibesinthreads.store`
+  - Password: `VibesAdmin@2025!Store`
 
 ### API Endpoints
 - Base URL: `http://localhost:5000/api/v1`

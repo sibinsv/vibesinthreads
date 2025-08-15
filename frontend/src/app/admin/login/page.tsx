@@ -90,7 +90,7 @@ export default function AdminLoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
-                    placeholder="admin@vibesinthreads.com"
+                    placeholder="admin@vibesinthreads.store"
                   />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                     <svg className="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

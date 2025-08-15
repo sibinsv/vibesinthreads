@@ -13,13 +13,13 @@ async function main() {
 
   // Create admin user
   console.log('Creating admin user...');
-  const hashedPassword = await bcrypt.hash('admin', 12);
+  const hashedPassword = await bcrypt.hash('VibesAdmin@2025!Store', 12);
   
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@vibesinthreads.com' },
+    where: { email: 'admin@vibesinthreads.store' },
     update: {},
     create: {
-      email: 'admin@vibesinthreads.com',
+      email: 'admin@vibesinthreads.store',
       password: hashedPassword,
       firstName: 'Admin',
       lastName: 'User',

@@ -296,7 +296,7 @@ EOF
 
 ## 🎉 Expected Result
 - ✅ Full e-commerce application live at https://vibesinthreads.store
-- ✅ Admin panel accessible with default credentials (admin@vibesinthreads.com / admin)
+- ✅ Admin panel accessible with default credentials (admin@vibesinthreads.store / VibesAdmin@2025!Store)
 - ✅ API documentation available at /api-docs
 - ✅ Image uploads working with proper serving
 - ✅ Automatic restart after server reboots
