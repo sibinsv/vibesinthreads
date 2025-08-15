@@ -17,7 +17,10 @@ export function formatPriceSimple(price: number): string {
 }
 
 export function calculateDiscountPercentage(originalPrice: number, salePrice: number): number {
-  return Math.round(((originalPrice - salePrice) / originalPrice) * 100)
+  if (originalPrice === 0 || originalPrice <= salePrice) {
+    return 0;
+  }
+  return Math.round(((originalPrice - salePrice) / originalPrice) * 100);
 }
 
 export function generateProductImageUrl(slug: string, imageName: string): string {
