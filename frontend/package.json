@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "npm run kill && npm run clean && next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clean": "rimraf .next && npm cache clean --force 2>nul || true",
+    "kill": "npx kill-port 3000 2>nul || true"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",
@@ -29,6 +31,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
+    "kill-port": "^2.0.1",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

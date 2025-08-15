@@ -21,11 +21,14 @@ This is a full-stack e-commerce application for ethnic wear (Vibes in Threads) w
 - **Database reset**: `npm run db:reset` (drops entire database, recreates schema)
 - **Production-safe setup**: `npm run db:setup` (reset + essential seeding only)
 - **Development setup**: `npm run db:setup-dev` (reset + essential + test data)
-- **Fresh start**: `npm run fresh` (full reset with development data)
 
 ### Frontend
-- Start development server: `npm run dev`
+- Start development server: `npm run dev` (includes port cleanup and cache clearing)
 - Build production: `npm run build`
+
+#### Frontend Commands
+- **Port cleanup**: `npm run kill` (clears port 3000)
+- **Cache cleanup**: `npm run clean` (clears .next cache)
 
 ## Key Features
 
