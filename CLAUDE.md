@@ -9,8 +9,7 @@ This is a full-stack e-commerce application for ethnic wear (Vibes in Threads) w
 ## Development Commands
 
 ### Backend
-- Start development server: `npm run fresh` (recommended - includes full database setup)
-- Alternative development: `npm run dev`
+- Start development server: `npm run dev` (includes full database setup)
 
 #### Database Commands
 
@@ -50,7 +49,7 @@ This is a full-stack e-commerce application for ethnic wear (Vibes in Threads) w
 
 ## Important Notes
 
-- Always run `npm run fresh` for the backend to ensure database is properly set up
+- Always run `npm run dev` for the backend to ensure database is properly set up
 - **Seeding Strategy**: 
   - `npm run db:seed` - Only creates admin user (production-safe, idempotent)
   - `npm run db:seed-dev` - Adds test data (categories, products) - development only, idempotent
