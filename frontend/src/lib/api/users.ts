@@ -302,6 +302,40 @@ export const userService = {
         error
       };
     }
+  },
+
+  /**
+   * Reset user password (Admin only)
+   */
+  async resetUserPassword(id: number, newPassword: string): Promise<ApiResponse<{ user: Partial<User> }>> {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/admin/users/${id}/reset-password`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ newPassword })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to reset user password');
+      }
+
+      return {
+        success: true,
+        data: result.data,
+        message: result.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to reset user password',
+        error
+      };
+    }
   }
 };
 

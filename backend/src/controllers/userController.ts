@@ -618,3 +618,98 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
     });
   }
 };
+
+/**
+ * Reset user password (Admin only)
+ */
+export const resetUserPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+    const userId = parseInt(id, 10);
+
+    if (isNaN(userId)) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid user ID'
+      });
+      return;
+    }
+
+    // Validate new password
+    if (!newPassword || typeof newPassword !== 'string') {
+      res.status(400).json({
+        success: false,
+        message: 'New password is required'
+      });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      res.status(400).json({
+        success: false,
+        message: 'New password must be at least 8 characters long'
+      });
+      return;
+    }
+
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!existingUser) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+      return;
+    }
+
+    // Check if user is active
+    if (!existingUser.isActive) {
+      res.status(400).json({
+        success: false,
+        message: 'Cannot reset password for inactive user'
+      });
+      return;
+    }
+
+    // Hash new password
+    const saltRounds = 12;
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update user password
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedNewPassword,
+        updatedAt: new Date()
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        updatedAt: true
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Password reset successfully for ${updatedUser.firstName} ${updatedUser.lastName}`,
+      data: {
+        user: updatedUser
+      }
+    });
+  } catch (error) {
+    console.error('Reset user password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error : undefined
+    });
+  }
+};

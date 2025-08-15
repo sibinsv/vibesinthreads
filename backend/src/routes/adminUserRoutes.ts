@@ -5,7 +5,8 @@ import {
   createUser, 
   updateUser, 
   toggleUserStatus, 
-  deleteUser 
+  deleteUser,
+  resetUserPassword
 } from '../controllers/userController';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
 
@@ -494,5 +495,88 @@ router.delete('/:id', deleteUser);
  *         description: Internal server error
  */
 router.patch('/:id/status', toggleUserStatus);
+
+/**
+ * @swagger
+ * /api/v1/admin/users/{id}/reset-password:
+ *   put:
+ *     summary: Reset user password (Admin only)
+ *     tags: [Admin - User Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - newPassword
+ *             properties:
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 8
+ *                 example: newSecurePassword123
+ *                 description: New password for the user (minimum 8 characters)
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Password reset successfully for John Doe
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                           example: 1
+ *                         email:
+ *                           type: string
+ *                           example: user@example.com
+ *                         firstName:
+ *                           type: string
+ *                           example: John
+ *                         lastName:
+ *                           type: string
+ *                           example: Doe
+ *                         role:
+ *                           type: string
+ *                           example: customer
+ *                         isActive:
+ *                           type: boolean
+ *                           example: true
+ *                         updatedAt:
+ *                           type: string
+ *                           format: date-time
+ *       400:
+ *         description: Invalid data or inactive user
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin access required
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put('/:id/reset-password', resetUserPassword);
 
 export default router;

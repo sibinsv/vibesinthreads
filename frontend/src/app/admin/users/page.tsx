@@ -15,13 +15,15 @@ import {
   Mail,
   ShoppingBag,
   Ban,
-  CheckCircle
+  CheckCircle,
+  Key
 } from 'lucide-react';
 import { User, userService, UserFilters } from '@/lib/api/users';
 import { Button } from '@/components/ui/Button';
 import { formatPriceSimple, cn } from '@/lib/utils';
 import { useToast } from '@/hooks/useToast';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { ResetPasswordModal } from '@/components/ui/ResetPasswordModal';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -45,6 +47,11 @@ export default function AdminUsersPage() {
     userName: string;
   }>({ isOpen: false, userId: null, userName: '' });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [resetPasswordModal, setResetPasswordModal] = useState<{
+    isOpen: boolean;
+    userId: number | null;
+    userName: string;
+  }>({ isOpen: false, userId: null, userName: '' });
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -113,6 +120,15 @@ export default function AdminUsersPage() {
   const handleDeleteUser = (userId: number) => {
     const user = users.find(u => u.id === userId);
     setDeleteModal({
+      isOpen: true,
+      userId,
+      userName: user?.name || 'Unknown User'
+    });
+  };
+
+  const handleResetPassword = (userId: number) => {
+    const user = users.find(u => u.id === userId);
+    setResetPasswordModal({
       isOpen: true,
       userId,
       userName: user?.name || 'Unknown User'
@@ -477,6 +493,16 @@ export default function AdminUsersPage() {
                         >
                           {user.isActive ? <Ban className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
                         </Button>
+                        {user.isActive && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleResetPassword(user.id)}
+                            className="text-orange-600 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                          >
+                            <Key className="h-4 w-4" />
+                          </Button>
+                        )}
                         {user.role !== 'admin' && (
                           <Button 
                             variant="ghost" 
@@ -546,6 +572,41 @@ export default function AdminUsersPage() {
         variant="danger"
         isLoading={isDeleting}
       />
+
+      {/* Reset Password Modal */}
+      {resetPasswordModal.userId && (
+        <ResetPasswordModal
+          isOpen={resetPasswordModal.isOpen}
+          onClose={() => setResetPasswordModal({ isOpen: false, userId: null, userName: '' })}
+          onSuccess={() => {
+            // Refresh users list after successful password reset
+            const fetchUsers = async () => {
+              setIsLoading(true);
+              try {
+                const currentFilters = {
+                  ...filters,
+                  search: searchTerm || undefined,
+                  role: roleFilter || undefined,
+                  status: statusFilter || undefined
+                };
+                const response = await userService.getUsers(currentFilters);
+                if (response.success && response.data) {
+                  setUsers(response.data.users || []);
+                  setTotalUsers(response.data.pagination?.totalCount || 0);
+                  setTotalPages(response.data.pagination?.totalPages || 0);
+                }
+              } catch (error) {
+                console.error('Error fetching users:', error);
+              } finally {
+                setIsLoading(false);
+              }
+            };
+            fetchUsers();
+          }}
+          userId={resetPasswordModal.userId}
+          userName={resetPasswordModal.userName}
+        />
+      )}
     </div>
   );
 }

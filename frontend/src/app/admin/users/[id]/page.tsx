@@ -19,9 +19,11 @@ import {
   Heart,
   Shirt,
   Package,
-  Clock
+  Clock,
+  Key
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { ResetPasswordModal } from '@/components/ui/ResetPasswordModal';
 import { formatPriceSimple, cn } from '@/lib/utils';
 import { useToast } from '@/hooks/useToast';
 
@@ -70,6 +72,7 @@ export default function UserDetailPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -252,6 +255,16 @@ export default function UserDetailPage() {
               Edit User
             </Button>
           </Link>
+
+          <Button
+            variant="outline"
+            onClick={() => setIsResetPasswordModalOpen(true)}
+            disabled={!user.isActive}
+            className="gap-2 text-orange-600 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+          >
+            <Key className="h-4 w-4" />
+            Reset Password
+          </Button>
           
           <Button
             variant="outline"
@@ -511,6 +524,19 @@ export default function UserDetailPage() {
             )}
           </div>
         </div>
+      )}
+      
+      {/* Reset Password Modal */}
+      {user && (
+        <ResetPasswordModal
+          isOpen={isResetPasswordModalOpen}
+          onClose={() => setIsResetPasswordModalOpen(false)}
+          onSuccess={() => {
+            fetchUser(); // Refresh user data
+          }}
+          userId={user.id}
+          userName={`${user.firstName} ${user.lastName}`}
+        />
       )}
     </div>
   );
