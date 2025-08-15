@@ -187,7 +187,13 @@ export default function NewProductPage() {
         metaTitle: formData.metaTitle,
         metaDescription: formData.metaDescription,
         isActive: formData.isActive,
-        isFeatured: formData.isFeatured
+        isFeatured: formData.isFeatured,
+        images: formData.images.map((img, index) => ({
+          url: img.url,
+          altText: img.altText || '',
+          isMain: img.isMain || index === 0,
+          sortOrder: img.sortOrder ?? index
+        }))
       };
 
       const response = await productsApi.create(productData);

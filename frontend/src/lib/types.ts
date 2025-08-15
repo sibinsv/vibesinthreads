@@ -146,3 +146,30 @@ export interface User {
   orderCount?: number;
   totalSpent?: number;
 }
+
+export interface CreateProductData {
+  name: string;
+  slug?: string;
+  description: string;
+  shortDescription?: string;
+  price: number;
+  comparePrice?: number;
+  stock: number;
+  categoryId: number;
+  fabric?: string;
+  occasion?: string;
+  designer?: string;
+  craftType?: string;
+  region?: string;
+  careInstructions?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  isActive?: boolean;
+  isFeatured?: boolean;
+  images?: {
+    url: string;
+    altText?: string;
+    isMain?: boolean;
+    sortOrder?: number;
+  }[];
+}

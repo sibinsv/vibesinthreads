@@ -262,10 +262,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                     fill
                     className="object-cover rounded"
                     onLoad={() => {
-                      console.log('Image loaded successfully:', image.url);
+                      // Image loaded successfully
                     }}
                     onError={() => {
-                      console.error('Image failed to load:', image.url);
+                      console.error('Image failed to load:', image.thumbnailUrl || image.url);
                     }}
                   />
                   

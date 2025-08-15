@@ -108,10 +108,20 @@ export class ProductService {
       throw new AppError('Category not found', 404);
     }
 
+    const { images, ...productData } = data;
+
     const product = await prisma.product.create({
       data: {
-        ...data,
-        slug
+        ...productData,
+        slug,
+        images: images && images.length > 0 ? {
+          create: images.map((img, index) => ({
+            url: img.url,
+            altText: img.altText || '',
+            isMain: img.isMain || index === 0,
+            sortOrder: img.sortOrder ?? index
+          }))
+        } : undefined
       },
       include: {
         category: {
@@ -145,9 +155,22 @@ export class ProductService {
       data.slug = generateSlug(data.name);
     }
 
+    const { images, ...updateData } = data;
+
     const product = await prisma.product.update({
       where: { id },
-      data,
+      data: {
+        ...updateData,
+        images: images ? {
+          deleteMany: {},
+          create: images.map((img, index) => ({
+            url: img.url,
+            altText: img.altText || '',
+            isMain: img.isMain || index === 0,
+            sortOrder: img.sortOrder ?? index
+          }))
+        } : undefined
+      },
       include: {
         category: {
           select: { id: true, name: true, slug: true }

@@ -94,4 +94,10 @@ export interface CreateProductData {
   metaDescription?: string;
   isActive?: boolean;
   isFeatured?: boolean;
+  images?: {
+    url: string;
+    altText?: string;
+    isMain?: boolean;
+    sortOrder?: number;
+  }[];
 }

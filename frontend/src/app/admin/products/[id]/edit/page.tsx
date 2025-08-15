@@ -127,8 +127,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             images: product.images.map((img, index) => ({
               id: `existing-${img.id}`,
               url: getFullImageUrl(img.url),
-              filename: `product-image-${index + 1}`,
-              size: 0,
+              filename: img.filename || `product-image-${index + 1}`,
+              size: img.size || 0,
               altText: img.altText || '',
               isMain: img.isMain,
               sortOrder: img.sortOrder || index
@@ -187,8 +187,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       const updateData = {
         ...formData,
         images: formData.images.map((img, index) => ({
-          ...img,
-          sortOrder: index
+          url: img.url,
+          altText: img.altText || '',
+          isMain: img.isMain || index === 0,
+          sortOrder: img.sortOrder ?? index
         }))
       };
 
