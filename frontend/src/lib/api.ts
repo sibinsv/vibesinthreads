@@ -180,6 +180,11 @@ export interface AuthResponse {
   };
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const response = await api.post('/auth/login', credentials);
@@ -193,6 +198,11 @@ export const authApi = {
 
   getProfile: async (): Promise<ApiResponse<{ user: User }>> => {
     const response = await api.get('/auth/profile');
+    return response.data;
+  },
+
+  changePassword: async (data: ChangePasswordRequest): Promise<ApiResponse<null>> => {
+    const response = await api.put('/auth/change-password', data);
     return response.data;
   },
 

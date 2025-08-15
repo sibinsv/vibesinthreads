@@ -13,10 +13,12 @@ import {
   Bell,
   Upload,
   Eye,
-  EyeOff
+  EyeOff,
+  Lock
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/hooks/useToast';
+import { ChangePasswordForm } from '@/components/ChangePasswordForm';
 
 interface StoreSettings {
   // General
@@ -159,6 +161,7 @@ export default function AdminSettingsPage() {
     { id: 'shipping', label: 'Shipping & Tax', icon: Package },
     { id: 'seo', label: 'SEO', icon: Palette },
     { id: 'features', label: 'Features', icon: Shield },
+    { id: 'security', label: 'Account Security', icon: Lock },
     { id: 'notifications', label: 'Notifications', icon: Bell }
   ];
 
@@ -686,6 +689,18 @@ export default function AdminSettingsPage() {
               </div>
             )}
 
+            {/* Account Security Settings */}
+            {activeTab === 'security' && (
+              <div className="space-y-6">
+                <h2 className="text-lg font-semibold text-foreground">Account Security</h2>
+                <p className="text-sm text-muted-foreground">
+                  Manage your account security settings and change your password.
+                </p>
+                
+                <ChangePasswordForm />
+              </div>
+            )}
+
             {/* Notifications Settings */}
             {activeTab === 'notifications' && (
               <div className="space-y-6">
@@ -744,19 +759,21 @@ export default function AdminSettingsPage() {
               </div>
             )}
 
-            {/* Save Button */}
-            <div className="pt-6 border-t border-border">
-              <div className="flex justify-end">
-                <Button 
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="gap-2"
-                >
-                  <Save className="h-4 w-4" />
-                  {isSaving ? 'Saving...' : 'Save Changes'}
-                </Button>
+            {/* Save Button - Only show for non-security tabs */}
+            {activeTab !== 'security' && (
+              <div className="pt-6 border-t border-border">
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="gap-2"
+                  >
+                    <Save className="h-4 w-4" />
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

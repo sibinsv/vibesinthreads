@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, register, getProfile, adminLogin } from '../controllers/authController';
+import { login, register, getProfile, adminLogin, changePassword } from '../controllers/authController';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
@@ -185,10 +185,57 @@ const router = Router();
  *         description: User not found
  *       500:
  *         description: Internal server error
+ *
+ * /api/v1/auth/change-password:
+ *   put:
+ *     summary: Change user password
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 example: currentPassword123
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 8
+ *                 example: newPassword123
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Password changed successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Current password is incorrect or unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
  */
 router.post('/register', register);
 router.post('/login', login);
 router.post('/admin/login', adminLogin);
 router.get('/profile', authenticateToken, getProfile);
+router.put('/change-password', authenticateToken, changePassword);
 
 export default router;
