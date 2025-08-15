@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, X, Upload, Grid3X3 } from 'lucide-react';
 import { Category } from '@/lib/types';
-import { categoriesApi } from '@/lib/api';
+import { categoriesApi, getAdminErrorMessage } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { useToast } from '@/hooks/useToast';
@@ -112,15 +112,8 @@ export default function NewCategoryPage() {
       }
     } catch (error) {
       console.error('Error creating category:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create category. Please try again.';
-      
-      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
-        toast.error('Authentication required. Please log in as admin first.');
-      } else if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
-        toast.error('Admin access required. Please log in with admin credentials.');
-      } else {
-        toast.error(`Failed to create category: ${errorMessage}`);
-      }
+      const errorMessage = getAdminErrorMessage(error);
+      toast.error(`Failed to create category: ${errorMessage}`);
     } finally {
       setIsSaving(false);
     }

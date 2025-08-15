@@ -22,6 +22,30 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Add response interceptor to handle errors consistently
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.data) {
+      // If the backend returns an error response with data, preserve it
+      const errorData = error.response.data;
+      const enhancedError = new Error(errorData.error || errorData.message || 'An error occurred');
+      (enhancedError as any).response = error.response;
+      (enhancedError as any).backendError = errorData;
+      throw enhancedError;
+    }
+    
+    // For network errors or other issues, create a descriptive message
+    const networkError = new Error(
+      error.code === 'ECONNREFUSED' || error.message.includes('Network Error')
+        ? 'Unable to connect to server. Please check if the backend is running.'
+        : error.message || 'An unexpected error occurred'
+    );
+    (networkError as any).isNetworkError = true;
+    throw networkError;
+  }
+);
+
 // Products API
 export const productsApi = {
   getAll: async (filters?: ProductFilters, pagination?: PaginationParams): Promise<ApiResponse<Product[]>> => {
@@ -267,6 +291,64 @@ export const uploadApi = {
       };
     }
   }
+};
+
+// Utility function to extract meaningful error messages for admin users
+export const getAdminErrorMessage = (errorOrResponse: any): string => {
+  // Handle case where this is called with an API response object (not an error)
+  if (errorOrResponse && typeof errorOrResponse === 'object' && 'success' in errorOrResponse) {
+    // This is an API response object, extract error information
+    return errorOrResponse.error || errorOrResponse.message || 'Operation failed';
+  }
+  
+  // Check if it's a backend error with specific details
+  if (errorOrResponse.backendError) {
+    const backendError = errorOrResponse.backendError;
+    
+    // If there's an error field with details, use it
+    if (backendError.error) {
+      return backendError.error;
+    }
+    
+    // If there's a message field, use it
+    if (backendError.message) {
+      return backendError.message;
+    }
+  }
+  
+  // Check if it's a network error
+  if (errorOrResponse.isNetworkError) {
+    return errorOrResponse.message;
+  }
+  
+  // For axios errors, try to extract meaningful information
+  if (errorOrResponse.response) {
+    const status = errorOrResponse.response.status;
+    const statusText = errorOrResponse.response.statusText;
+    
+    // Common HTTP error codes with admin-friendly messages
+    switch (status) {
+      case 400:
+        return `Bad Request: ${errorOrResponse.message || 'Invalid data provided'}`;
+      case 401:
+        return 'Authentication required. Please login again.';
+      case 403:
+        return 'Access denied. Insufficient permissions.';
+      case 404:
+        return 'Resource not found. The item may have been deleted.';
+      case 409:
+        return `Conflict: ${errorOrResponse.message || 'Resource already exists or has conflicts'}`;
+      case 422:
+        return `Validation Error: ${errorOrResponse.message || 'Invalid data provided'}`;
+      case 500:
+        return `Server Error: ${errorOrResponse.message || 'Internal server error occurred'}`;
+      default:
+        return `HTTP ${status}: ${errorOrResponse.message || statusText || 'Unknown error'}`;
+    }
+  }
+  
+  // Fallback to the error message or a generic message
+  return errorOrResponse.message || 'An unexpected error occurred. Please try again or contact support.';
 };
 
 export default api;

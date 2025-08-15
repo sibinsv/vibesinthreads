@@ -13,7 +13,7 @@ import {
   FolderOpen
 } from 'lucide-react';
 import { Category } from '@/lib/types';
-import { categoriesApi } from '@/lib/api';
+import { categoriesApi, getAdminErrorMessage } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { useToast } from '@/hooks/useToast';
@@ -46,7 +46,7 @@ export default function AdminCategoriesPage() {
         }
       } catch (error) {
         console.error('Error fetching categories:', error);
-        toast.error('Failed to load categories');
+        toast.error(`Failed to load categories: ${getAdminErrorMessage(error)}`);
         setCategories([]);
       } finally {
         setIsLoading(false);
@@ -123,7 +123,7 @@ export default function AdminCategoriesPage() {
           // Refresh the list
           window.location.reload();
         } else {
-          toast.error('Failed to delete categories');
+          toast.error(`Failed to delete categories: ${getAdminErrorMessage(response)}`);
         }
       } else {
         // Handle single delete
@@ -133,12 +133,12 @@ export default function AdminCategoriesPage() {
           // Refresh the list
           window.location.reload();
         } else {
-          toast.error('Failed to delete category');
+          toast.error(`Failed to delete category: ${getAdminErrorMessage(response)}`);
         }
       }
     } catch (error) {
       console.error('Error deleting category:', error);
-      toast.error('Failed to delete category');
+      toast.error(`Failed to delete category: ${getAdminErrorMessage(error)}`);
     } finally {
       setIsDeleting(false);
       setDeleteModal({ isOpen: false, categoryId: null, categoryName: '', isMultiple: false });

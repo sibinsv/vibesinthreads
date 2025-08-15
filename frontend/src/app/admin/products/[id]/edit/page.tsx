@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, X, Upload, Package, Eye, Trash2, Plus } from 'lucide-react';
 import { Product, Category } from '@/lib/types';
-import { productsApi, categoriesApi } from '@/lib/api';
+import { productsApi, categoriesApi, getAdminErrorMessage } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
@@ -140,7 +140,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             }))
           });
         } else {
-          toast.error('Product not found');
+          toast.error(`Product not found: ${getAdminErrorMessage(response)}`);
           router.push('/admin/products');
         }
 
@@ -149,7 +149,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         }
       } catch (error) {
         console.error('Error loading data:', error);
-        toast.error('Failed to load product data');
+        toast.error(`Failed to load product data: ${getAdminErrorMessage(error)}`);
         router.push('/admin/products');
       } finally {
         setIsLoading(false);
@@ -205,11 +205,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         toast.success('Product updated successfully!');
         router.push('/admin/products');
       } else {
-        toast.error('Failed to update product: ' + (response.error || 'Unknown error'));
+        toast.error(`Failed to update product: ${getAdminErrorMessage(response)}`);
       }
     } catch (error) {
       console.error('Error updating product:', error);
-      toast.error('Failed to update product. Please try again.');
+      toast.error(`Failed to update product: ${getAdminErrorMessage(error)}`);
     } finally {
       setIsSaving(false);
     }
@@ -228,11 +228,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         toast.success('Product deleted successfully');
         router.push('/admin/products');
       } else {
-        toast.error('Failed to delete product');
+        toast.error(`Failed to delete product: ${getAdminErrorMessage(response)}`);
       }
     } catch (error) {
       console.error('Error deleting product:', error);
-      toast.error('Failed to delete product');
+      toast.error(`Failed to delete product: ${getAdminErrorMessage(error)}`);
     } finally {
       setDeleteModal({ isOpen: false, isDeleting: false });
     }

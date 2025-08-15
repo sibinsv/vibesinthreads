@@ -14,7 +14,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { Product, ProductFilters, PaginationParams } from '@/lib/types';
-import { productsApi } from '@/lib/api';
+import { productsApi, getAdminErrorMessage } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { useToast } from '@/hooks/useToast';
@@ -60,7 +60,7 @@ export default function AdminProductsPage() {
         }
       } catch (error) {
         console.error('Error fetching products:', error);
-        toast.error('Failed to load products');
+        toast.error(`Failed to load products: ${getAdminErrorMessage(error)}`);
         setProducts([]);
       } finally {
         setIsLoading(false);
@@ -128,7 +128,7 @@ export default function AdminProductsPage() {
           // Refresh the list
           window.location.reload();
         } else {
-          toast.error('Failed to delete products');
+          toast.error(`Failed to delete products: ${getAdminErrorMessage(response)}`);
         }
       } else {
         // Handle single delete
@@ -138,12 +138,12 @@ export default function AdminProductsPage() {
           // Refresh the list
           window.location.reload();
         } else {
-          toast.error('Failed to delete product');
+          toast.error(`Failed to delete product: ${getAdminErrorMessage(response)}`);
         }
       }
     } catch (error) {
       console.error('Error deleting product:', error);
-      toast.error('Failed to delete product');
+      toast.error(`Failed to delete product: ${getAdminErrorMessage(error)}`);
     } finally {
       setIsDeleting(false);
       setDeleteModal({ isOpen: false, productId: null, productName: '', isMultiple: false });

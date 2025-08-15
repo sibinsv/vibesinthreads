@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Save, X, Plus, Upload } from 'lucide-react';
 import { Category, CreateProductData } from '@/lib/types';
-import { categoriesApi, productsApi } from '@/lib/api';
+import { categoriesApi, productsApi, getAdminErrorMessage } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { useToast } from '@/hooks/useToast';
@@ -203,11 +203,11 @@ export default function NewProductPage() {
       if (response.success) {
         router.push('/admin/products');
       } else {
-        toast.error('Failed to create product');
+        toast.error(`Failed to create product: ${getAdminErrorMessage(response)}`);
       }
     } catch (error) {
       console.error('Error creating product:', error);
-      alert('Failed to create product');
+      toast.error(`Failed to create product: ${getAdminErrorMessage(error)}`);
     } finally {
       setIsSaving(false);
     }

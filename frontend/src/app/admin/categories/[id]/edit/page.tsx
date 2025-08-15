@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, X, Grid3X3, Trash2 } from 'lucide-react';
 import { Category } from '@/lib/types';
-import { categoriesApi } from '@/lib/api';
+import { categoriesApi, getAdminErrorMessage } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { useToast } from '@/hooks/useToast';
@@ -97,7 +97,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
             parentId: category.parentId
           });
         } else {
-          toast.error('Category not found');
+          toast.error(`Category not found: ${getAdminErrorMessage(response)}`);
           router.push('/admin/categories');
         }
 
@@ -108,7 +108,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
         }
       } catch (error) {
         console.error('Error loading data:', error);
-        toast.error('Failed to load category data');
+        toast.error(`Failed to load category data: ${getAdminErrorMessage(error)}`);
         router.push('/admin/categories');
       } finally {
         setIsLoading(false);
@@ -162,11 +162,11 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
         toast.success('Category updated successfully!');
         router.push('/admin/categories');
       } else {
-        toast.error('Failed to update category: ' + (response.error || 'Unknown error'));
+        toast.error(`Failed to update category: ${getAdminErrorMessage(response)}`);
       }
     } catch (error) {
       console.error('Error updating category:', error);
-      toast.error('Failed to update category. Please try again.');
+      toast.error(`Failed to update category: ${getAdminErrorMessage(error)}`);
     } finally {
       setIsSaving(false);
     }
@@ -184,11 +184,11 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
         toast.success('Category deleted successfully');
         router.push('/admin/categories');
       } else {
-        toast.error('Failed to delete category');
+        toast.error(`Failed to delete category: ${getAdminErrorMessage(response)}`);
       }
     } catch (error) {
       console.error('Error deleting category:', error);
-      toast.error('Failed to delete category');
+      toast.error(`Failed to delete category: ${getAdminErrorMessage(error)}`);
     } finally {
       setIsDeleting(false);
       setDeleteModal(false);
