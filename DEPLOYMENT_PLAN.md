@@ -12,6 +12,23 @@ Deploy full-stack e-commerce application to DigitalOcean droplet with SQLite dat
 
 ## 🚀 Deployment Steps
 
+### ⚡ Quick Deployment (Recommended)
+
+**For streamlined deployment, use the automated script after server setup:**
+
+```bash
+# On production server, navigate to application directory
+cd /var/www/vibesinthreads-app
+
+# Run automated deployment script
+./deploy.sh v1.0.0
+```
+
+**For emergency rollback:**
+```bash
+./emergency-rollback.sh prod.db.backup.20250815-140000 v1.0.0
+```
+
 ### 1. Server Environment Setup
 ```bash
 # Update system and install Node.js 18+
@@ -43,10 +60,14 @@ npm run build
 # Frontend setup  
 cd ../frontend
 npm ci --production
-# TypeScript will be automatically installed by Next.js if missing
-# Modify next.config.ts to skip strict type checking if needed (temporary fix):
-# Add: typescript: { ignoreBuildErrors: true }, eslint: { ignoreDuringBuilds: true }
-npm run build
+# Install required dev dependencies for TypeScript compilation
+npm install --save-dev typescript @types/node @types/react @types/react-dom
+
+# Build with production environment variables (CRITICAL for API URL)
+# The repository includes .env.production with correct API URL
+NEXT_PUBLIC_API_URL='https://vibesinthreads.store/api/v1' npm run build
+
+# Note: next.config.ts has been updated to handle production build errors gracefully
 ```
 
 ### 2.5. Create Git Release Tag
@@ -105,52 +126,25 @@ sudo chmod 644 /var/www/vibesinthreads-app/backend/prisma/prisma/prod.db
 
 ### 4. PM2 Process Management Setup
 ```bash
-# Create PM2 ecosystem file with embedded environment variables
-# Note: env_file parameter is unreliable, use direct env specification
-sudo tee /var/www/vibesinthreads-app/ecosystem.config.js <<EOF
-module.exports = {
-  apps: [
-    {
-      name: 'vibes-backend',
-      script: './backend/dist/index.js',
-      cwd: '/var/www/vibesinthreads-app',
-      env: {
-        NODE_ENV: 'production',
-        PORT: 5000,
-        DATABASE_URL: 'file:./prisma/prod.db',
-        JWT_SECRET: '$JWT_SECRET',
-        JWT_REFRESH_SECRET: '$JWT_REFRESH_SECRET',
-        CORS_ORIGIN: 'https://vibesinthreads.store'
-      },
-      instances: 1,
-      autorestart: true,
-      watch: false,
-      max_memory_restart: '1G',
-      error_file: './logs/backend-error.log',
-      out_file: './logs/backend-out.log',
-      log_file: './logs/backend-combined.log'
-    },
-    {
-      name: 'vibes-frontend',
-      script: 'npm',
-      args: 'start',
-      cwd: '/var/www/vibesinthreads-app/frontend',
-      env: {
-        NODE_ENV: 'production',
-        PORT: 3000,
-        NEXT_PUBLIC_API_URL: 'https://vibesinthreads.store/api/v1'
-      },
-      instances: 1,
-      autorestart: true,
-      watch: false,
-      max_memory_restart: '1G',
-      error_file: './logs/frontend-error.log',
-      out_file: './logs/frontend-out.log',
-      log_file: './logs/frontend-combined.log'
-    }
-  ]
-};
-EOF
+# PM2 ecosystem configuration (✅ Already included in repository)
+# File: ecosystem.config.js contains production-ready configuration
+# with embedded environment variables (avoids env_file reliability issues)
+
+# The deployment script will automatically:
+# 1. Generate secure JWT secrets
+# 2. Replace placeholders in ecosystem.config.js
+# 3. Start services with PM2
+
+# Manual setup (if not using automated script):
+cd /var/www/vibesinthreads-app
+
+# Generate secure JWT secrets
+JWT_SECRET=$(openssl rand -hex 32)
+JWT_REFRESH_SECRET=$(openssl rand -hex 32)
+
+# Replace placeholders in ecosystem.config.js
+sed -i "s/REPLACE_WITH_JWT_SECRET_DURING_DEPLOYMENT/$JWT_SECRET/g" ecosystem.config.js
+sed -i "s/REPLACE_WITH_JWT_REFRESH_SECRET_DURING_DEPLOYMENT/$JWT_REFRESH_SECRET/g" ecosystem.config.js
 
 # Create logs directory
 sudo mkdir -p /var/www/vibesinthreads-app/logs
@@ -510,69 +504,62 @@ git tag -a v1.0.1 -m "Hotfix v1.0.1 - Security patch"
 - [ ] Critical functionality verified
 - [ ] Monitoring for issues (15+ minutes)
 
-#### Automated Deployment Script
+#### ✅ Automated Deployment Script (Already Implemented)
+
+The repository now includes a complete automated deployment script: `deploy.sh`
+
+**Key Features:**
+- 🔐 **Secure JWT secret generation** 
+- 📦 **Automatic database backup** (handles both possible locations)
+- 🏗️ **Complete build process** with required dependencies
+- 🗄️ **Database migration support**
+- 🔄 **Graceful service restart**
+- 🏥 **Health check verification**
+- 🧹 **Automatic backup cleanup**
+
+**Usage:**
 ```bash
-#!/bin/bash
-# deploy.sh - Automated deployment script
+# Make executable (one-time setup)
+chmod +x deploy.sh
 
-VERSION=$1
-if [ -z "$VERSION" ]; then
-    echo "Usage: ./deploy.sh v1.1.0"
-    exit 1
-fi
+# Deploy specific version
+./deploy.sh v1.1.0
 
-echo "🚀 Deploying $VERSION to production..."
+# The script handles all deployment steps automatically:
+# 1. Database backup
+# 2. Code checkout
+# 3. Secure secret generation
+# 4. Dependency installation (including required dev deps)
+# 5. Production builds with correct environment variables
+# 6. Database migrations
+# 7. Service restart
+# 8. Health verification
+```
 
-# Backup database
-BACKUP_FILE="backend/prisma/prod.db.backup.$(date +%Y%m%d-%H%M%S)"
-cp backend/prisma/prod.db "$BACKUP_FILE"
-echo "📦 Database backed up to $BACKUP_FILE"
-
-# Deploy new version
-git pull origin main
-git checkout "$VERSION"
-
-# Build applications
-cd backend && npm run build
-cd ../frontend && npm run build
-cd ..
-
-# Database migrations
-cd backend && npm run db:migrate:deploy && cd ..
-
-# Restart services
-pm2 reload all
-
-# Health check
-sleep 10
-if curl -f https://vibesinthreads.store/health > /dev/null 2>&1; then
-    echo "✅ Deployment successful!"
-    # Clean old backups (keep last 5)
-    ls -t backend/prisma/prod.db.backup.* | tail -n +6 | xargs rm -f 2>/dev/null || true
-else
-    echo "❌ Health check failed!"
-    echo "Consider rollback: git checkout v1.0.0 && pm2 reload all"
-    exit 1
-fi
+**Emergency Rollback Script:** `emergency-rollback.sh`
+```bash
+# Quick rollback with database restoration
+./emergency-rollback.sh prod.db.backup.20250815-140000 v1.0.0
 ```
 
 ## 🗃️ Database Migration Strategy
 
 ### Migration Setup & Commands
 
-#### Initial Migration Setup (One-time)
+#### Initial Migration Setup (✅ Already Completed)
 ```bash
-# Add migration commands to package.json
-cd backend
-npm pkg set scripts.db:migrate:dev="prisma migrate dev"
-npm pkg set scripts.db:migrate:deploy="prisma migrate deploy"
-npm pkg set scripts.db:migrate:status="prisma migrate status"
-npm pkg set scripts.db:migrate:reset="prisma migrate reset --force"
+# Migration commands already added to package.json
+# Initial migration already created: 20250815103817_init
 
-# Create initial migration from current schema
-npx prisma migrate dev --name init --create-only
-# Review generated migration, then apply
-npx prisma migrate dev
+# Migration files structure:
+# backend/prisma/migrations/
+# ├── 20250815103817_init/
+# │   └── migration.sql
+# └── migration_lock.toml
+
+# To verify migration status:
+cd backend
+npm run db:migrate:status
 ```
 
 #### Production Migration Commands
@@ -671,32 +658,47 @@ pm2 restart vibes-backend
 ALTER TABLE users DROP COLUMN user_preferences;
 ```
 
-#### Emergency Rollback Procedure
+#### ✅ Emergency Rollback Procedure (Automated Script Available)
+
+The repository includes a comprehensive emergency rollback script: `emergency-rollback.sh`
+
+**Features:**
+- 🛑 **Safe service stopping** to prevent data corruption
+- 🗄️ **Database restoration** with path verification
+- 📝 **Code version rollback** with rebuild
+- 🔄 **Service restart** with health verification
+- 📋 **Comprehensive error handling**
+
+**Usage:**
 ```bash
-#!/bin/bash
-# emergency-rollback.sh
+# Basic rollback (database + code)
+./emergency-rollback.sh prod.db.backup.20250815-140000
 
-BACKUP_FILE=$1
-if [ -z "$BACKUP_FILE" ]; then
-    echo "Usage: ./emergency-rollback.sh prod.db.backup.20250815-140000"
-    exit 1
-fi
+# Rollback to specific version
+./emergency-rollback.sh prod.db.backup.20250815-140000 v1.0.0
 
-echo "🚨 Emergency rollback in progress..."
+# The script automatically:
+# 1. Stops all services safely
+# 2. Restores database from backup
+# 3. Checks out specified code version
+# 4. Rebuilds applications
+# 5. Restarts services
+# 6. Verifies health check
+```
 
+**Manual Emergency Steps (if script fails):**
+```bash
 # Stop services
-pm2 stop vibes-backend
+pm2 stop all
 
-# Restore database
-cp "backend/prisma/$BACKUP_FILE" backend/prisma/prod.db
+# Restore database (check both possible locations)
+cp backend/prisma/prod.db.backup.20250815-140000 backend/prisma/prod.db
+# OR if in nested directory:
+cp backend/prisma/prisma/prod.db.backup.20250815-140000 backend/prisma/prisma/prod.db
 
-# Restart with previous code version if needed
-# git checkout v1.0.0 && npm run build
-
-# Restart services
-pm2 start vibes-backend
-
-echo "✅ Rollback completed"
+# Rollback code and restart
+git checkout v1.0.0
+pm2 start all
 ```
 
 ### Migration Monitoring
@@ -808,21 +810,40 @@ When ready to scale, migration steps:
 During the actual deployment on August 15, 2025, several issues were encountered and resolved. See `DEPLOYMENT_ISSUES_AND_FIXES.md` for detailed documentation.
 
 ### Key Issues Resolved:
-1. **Backend TypeScript Build**: Missing type definitions in production
-2. **Frontend Compilation**: Strict TypeScript errors blocking build
-3. **PM2 Environment Variables**: `env_file` parameter not working reliably
-4. **Nginx Configuration**: Deprecated syntax and invalid directives
-5. **Database Path**: Nested directory structure not matching expectations
-6. **Dependencies**: Dev dependencies required for production builds
+1. **Backend TypeScript Build**: Missing type definitions in production ✅
+2. **Frontend Compilation**: Strict TypeScript errors blocking build ✅
+3. **PM2 Environment Variables**: `env_file` parameter not working reliably ✅
+4. **Nginx Configuration**: Deprecated syntax and invalid directives ✅
+5. **Database Path**: Nested directory structure not matching expectations ✅
+6. **Dependencies**: Dev dependencies required for production builds ✅
+7. **Frontend API URL**: Build-time environment variable configuration ✅
+
+### ⚡ New Automation Features (August 15, 2025 Update):
+- 🤖 **Automated Deployment Script**: `deploy.sh` handles entire deployment process
+- 🚨 **Emergency Rollback Script**: `emergency-rollback.sh` for quick recovery
+- 🛠️ **Production-Ready Configuration**: 
+  - `ecosystem.config.js` with embedded environment variables
+  - `frontend/.env.production` for correct API URL
+  - `backend/.env.production` template with security guidance
+- 📊 **Database Migration System**: Prisma migrations initialized and ready
+- 🔐 **Enhanced Security**: Unique JWT secret generation and proper permissions
 
 ### Critical Success Factors:
 - ✅ Embed environment variables directly in PM2 config
-- ✅ Install TypeScript dev dependencies even in production
+- ✅ Install TypeScript dev dependencies even in production  
 - ✅ Test Nginx configuration before applying
 - ✅ Verify actual file paths after operations
 - ✅ Monitor PM2 logs for stability
+- ✅ **Use automated scripts for reliable deployment**
+- ✅ **Set environment variables at build time for Next.js**
+
+### 🎯 Deployment Recommendations:
+1. **Use `./deploy.sh v1.0.0`** for all deployments (recommended)
+2. **Manual deployment only for troubleshooting** (use updated manual steps)
+3. **Always test on staging environment first**
+4. **Keep emergency rollback script ready**: `./emergency-rollback.sh`
 
 ---
 **Created**: August 15, 2025  
-**Last Updated**: August 15, 2025 (Updated with deployment fixes)  
-**Status**: ✅ Successfully deployed with documented fixes
+**Last Updated**: August 15, 2025 (Major update: Added automation scripts and fixes)  
+**Status**: ✅ Production-ready with comprehensive automation
