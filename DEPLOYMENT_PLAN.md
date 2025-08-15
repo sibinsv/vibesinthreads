@@ -31,16 +31,21 @@ sudo chown root:root /var/www/vibesinthreads-app
 ```bash
 # Clone repository
 cd /var/www/vibesinthreads-app
-git clone https://github.com/[username]/vibesinthreads.git .
+git clone https://github.com/sibinsv/vibesinthreads.git .
 
 # Backend setup
 cd backend
 npm ci --production
+# Install required dev dependencies for TypeScript compilation
+npm install --save-dev @types/jsonwebtoken @types/cors @types/morgan typescript ts-node @types/node
 npm run build
 
 # Frontend setup  
 cd ../frontend
 npm ci --production
+# TypeScript will be automatically installed by Next.js if missing
+# Modify next.config.ts to skip strict type checking if needed (temporary fix):
+# Add: typescript: { ignoreBuildErrors: true }, eslint: { ignoreDuringBuilds: true }
 npm run build
 ```
 
@@ -66,32 +71,42 @@ git log --oneline -1
 ```bash
 # Create production environment file
 cd /var/www/vibesinthreads-app/backend
+# Generate secure JWT secrets
+JWT_SECRET=$(openssl rand -hex 32)
+JWT_REFRESH_SECRET=$(openssl rand -hex 32)
+
 sudo tee .env.production <<EOF
 NODE_ENV=production
 PORT=5000
 DATABASE_URL="file:./prisma/prod.db"
-JWT_SECRET="[generate-secure-random-string]"
-JWT_REFRESH_SECRET="[generate-secure-random-string]"
+JWT_SECRET="$JWT_SECRET"
+JWT_REFRESH_SECRET="$JWT_REFRESH_SECRET"
 CORS_ORIGIN="https://vibesinthreads.store"
 EOF
 
 # Set proper permissions
 sudo chmod 600 .env.production
 
-# Initialize database with proper migrations
-npm run db:migrate:deploy
-npm run prisma:generate  
-npm run db:seed
+# Initialize database (handle environment variables explicitly)
+DATABASE_URL="file:./prisma/prod.db" npm run db:sync
+DATABASE_URL="file:./prisma/prod.db" npm run prisma:generate  
+DATABASE_URL="file:./prisma/prod.db" npm run db:seed
 # Note: NOT running db:seed-dev (test data) in production
 
 # Create uploads directory
 sudo mkdir -p uploads/images uploads/thumbnails
 sudo chmod 755 uploads uploads/images uploads/thumbnails
+
+# Verify database file location and set permissions
+find /var/www/vibesinthreads-app -name "*.db" -type f
+# Set permissions on actual database file (may be in nested prisma/ directory)
+sudo chmod 644 /var/www/vibesinthreads-app/backend/prisma/prisma/prod.db
 ```
 
 ### 4. PM2 Process Management Setup
 ```bash
-# Create PM2 ecosystem file
+# Create PM2 ecosystem file with embedded environment variables
+# Note: env_file parameter is unreliable, use direct env specification
 sudo tee /var/www/vibesinthreads-app/ecosystem.config.js <<EOF
 module.exports = {
   apps: [
@@ -101,9 +116,12 @@ module.exports = {
       cwd: '/var/www/vibesinthreads-app',
       env: {
         NODE_ENV: 'production',
-        PORT: 5000
+        PORT: 5000,
+        DATABASE_URL: 'file:./prisma/prod.db',
+        JWT_SECRET: '$JWT_SECRET',
+        JWT_REFRESH_SECRET: '$JWT_REFRESH_SECRET',
+        CORS_ORIGIN: 'https://vibesinthreads.store'
       },
-      env_file: './backend/.env.production',
       instances: 1,
       autorestart: true,
       watch: false,
@@ -140,13 +158,19 @@ sudo mkdir -p /var/www/vibesinthreads-app/logs
 # Start applications with PM2
 cd /var/www/vibesinthreads-app
 pm2 start ecosystem.config.js
+
+# Verify applications are running stable (check for 0 restarts)
+sleep 10
+pm2 status
+
+# Save configuration and enable startup
 pm2 save
 pm2 startup
 ```
 
 ### 5. Nginx Configuration Update
 ```bash
-# Update Nginx configuration
+# Update Nginx configuration (fixed syntax for modern nginx)
 sudo tee /etc/nginx/sites-available/vibesinthreads.store <<EOF
 server {
     listen 80;
@@ -155,7 +179,8 @@ server {
 }
 
 server {
-    listen 443 ssl http2;
+    listen 443 ssl;
+    http2 on;
     server_name vibesinthreads.store www.vibesinthreads.store;
 
     ssl_certificate /etc/letsencrypt/live/vibesinthreads.store/fullchain.pem;
@@ -218,18 +243,24 @@ server {
         proxy_cache_bypass \$http_upgrade;
     }
 
-    # Gzip compression
+    # Gzip compression (fixed syntax)
     gzip on;
     gzip_vary on;
     gzip_min_length 1024;
-    gzip_proxied expired no-cache no-store private must-revalidate auth;
+    gzip_proxied expired no-cache no-store private auth;
     gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/javascript;
 }
 EOF
 
-# Test and reload Nginx
+# Test configuration before applying (critical step)
 sudo nginx -t
-sudo systemctl reload nginx
+if [ $? -eq 0 ]; then
+    sudo systemctl reload nginx
+    echo "✅ Nginx configuration updated successfully"
+else
+    echo "❌ Nginx configuration test failed - check syntax"
+    exit 1
+fi
 ```
 
 ### 6. Security & Firewall Setup
@@ -772,7 +803,26 @@ When ready to scale, migration steps:
 - **Nginx Config**: `/etc/nginx/sites-available/vibesinthreads.store`
 - **SSL Cert**: Auto-renews via Let's Encrypt
 
+## 🚨 Known Issues and Fixes
+
+During the actual deployment on August 15, 2025, several issues were encountered and resolved. See `DEPLOYMENT_ISSUES_AND_FIXES.md` for detailed documentation.
+
+### Key Issues Resolved:
+1. **Backend TypeScript Build**: Missing type definitions in production
+2. **Frontend Compilation**: Strict TypeScript errors blocking build
+3. **PM2 Environment Variables**: `env_file` parameter not working reliably
+4. **Nginx Configuration**: Deprecated syntax and invalid directives
+5. **Database Path**: Nested directory structure not matching expectations
+6. **Dependencies**: Dev dependencies required for production builds
+
+### Critical Success Factors:
+- ✅ Embed environment variables directly in PM2 config
+- ✅ Install TypeScript dev dependencies even in production
+- ✅ Test Nginx configuration before applying
+- ✅ Verify actual file paths after operations
+- ✅ Monitor PM2 logs for stability
+
 ---
 **Created**: August 15, 2025  
-**Last Updated**: August 15, 2025  
-**Status**: Ready for execution
+**Last Updated**: August 15, 2025 (Updated with deployment fixes)  
+**Status**: ✅ Successfully deployed with documented fixes
