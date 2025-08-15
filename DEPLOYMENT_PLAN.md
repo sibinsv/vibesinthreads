@@ -82,7 +82,7 @@ sudo chmod 600 .env.production
 npm run db:migrate:deploy
 npm run prisma:generate  
 npm run db:seed
-npm run db:seed-dev
+# Note: NOT running db:seed-dev (test data) in production
 
 # Create uploads directory
 sudo mkdir -p uploads/images uploads/thumbnails
@@ -270,6 +270,11 @@ EOF
 - **Backend**: Production environment with secure JWT secrets
 - **Frontend**: API URL pointing to production domain
 - **Database**: SQLite file with proper permissions
+
+### Production Data Strategy
+- **Admin User**: Created via `npm run db:seed` (production-safe)
+- **Test Data**: NOT seeded in production (no `db:seed-dev`)
+- **Categories/Products**: Manually created via admin panel after deployment
 
 ### Auto-Restart Configuration  
 - **PM2**: Configured for system startup (survives reboots)
