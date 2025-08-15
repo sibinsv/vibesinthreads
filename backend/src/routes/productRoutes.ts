@@ -6,6 +6,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  deleteProducts,
   getFeaturedProducts,
   getProductsByCategory,
   addProductImage,
@@ -335,6 +336,60 @@ router.put('/:id', authenticateToken, requireStaff, updateProduct);
  *         $ref: '#/components/responses/500'
  */
 router.delete('/:id', authenticateToken, requireStaff, deleteProduct);
+
+/**
+ * @swagger
+ * /api/v1/products/bulk/delete:
+ *   post:
+ *     summary: Delete multiple products (Admin only)
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - ids
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: Array of product IDs to delete
+ *     responses:
+ *       200:
+ *         description: Products deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     deleted:
+ *                       type: integer
+ *                     failed:
+ *                       type: array
+ *                       items:
+ *                         type: integer
+ *                 message:
+ *                   type: string
+ *       400:
+ *         $ref: '#/components/responses/400'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Staff access required
+ *       500:
+ *         $ref: '#/components/responses/500'
+ */
+router.post('/bulk/delete', authenticateToken, requireStaff, deleteProducts);
 
 // Product image management routes
 router.post('/:id/images', authenticateToken, requireStaff, addProductImage);

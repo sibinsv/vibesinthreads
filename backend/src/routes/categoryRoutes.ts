@@ -6,6 +6,8 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
+  deleteCategories,
+  getCategoryDeletionPreview,
   getMainCategories
 } from '../controllers/categoryController';
 import { authenticateToken, requireStaff } from '../middleware/auth';
@@ -268,5 +270,123 @@ router.put('/:id', authenticateToken, requireStaff, updateCategory);
  *         $ref: '#/components/responses/500'
  */
 router.delete('/:id', authenticateToken, requireStaff, deleteCategory);
+
+/**
+ * @swagger
+ * /api/v1/categories/{id}/deletion-preview:
+ *   get:
+ *     summary: Get deletion preview for category (Admin only)
+ *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Category ID
+ *     responses:
+ *       200:
+ *         description: Category deletion preview
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     canDelete:
+ *                       type: boolean
+ *                     subcategories:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           name:
+ *                             type: string
+ *                     categoriesWithProducts:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           name:
+ *                             type: string
+ *                           productCount:
+ *                             type: integer
+ *                     totalSubcategories:
+ *                       type: integer
+ *       404:
+ *         $ref: '#/components/responses/404'
+ *       500:
+ *         $ref: '#/components/responses/500'
+ */
+router.get('/:id/deletion-preview', authenticateToken, requireStaff, getCategoryDeletionPreview);
+
+/**
+ * @swagger
+ * /api/v1/categories/bulk/delete:
+ *   post:
+ *     summary: Delete multiple categories (Admin only)
+ *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - ids
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: Array of category IDs to delete
+ *     responses:
+ *       200:
+ *         description: Categories deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     deleted:
+ *                       type: integer
+ *                     failed:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           reason:
+ *                             type: string
+ *                 message:
+ *                   type: string
+ *       400:
+ *         $ref: '#/components/responses/400'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Staff access required
+ *       500:
+ *         $ref: '#/components/responses/500'
+ */
+router.post('/bulk/delete', authenticateToken, requireStaff, deleteCategories);
 
 export default router;

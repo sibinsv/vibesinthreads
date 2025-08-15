@@ -71,15 +71,63 @@ export default function AdminCategoriesPage() {
   };
 
   const handleDeleteCategory = async (categoryId: number) => {
-    if (window.confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+    const cascadeWarning = "\n\n⚠️ WARNING: If this category has subcategories, they will ALL be deleted too. This cannot be undone.";
+    const confirmMessage = `Are you sure you want to delete this category?${cascadeWarning}`;
+    
+    if (window.confirm(confirmMessage)) {
       try {
-        // This would need to be implemented in the API
-        console.log('Delete category:', categoryId);
-        // Refresh the list
-        window.location.reload();
+        const response = await categoriesApi.delete(categoryId);
+        if (response.success) {
+          alert('Category deleted successfully');
+          // Refresh the list
+          window.location.reload();
+        } else {
+          alert('Failed to delete category');
+        }
       } catch (error) {
         console.error('Error deleting category:', error);
         alert('Failed to delete category');
+      }
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedCategories.size === 0) return;
+    
+    const categoryCount = selectedCategories.size;
+    
+    // Show warning about cascading deletion
+    const cascadeWarning = "\n\n⚠️ WARNING: Categories with subcategories will cascade delete ALL their subcategories. This cannot be undone.";
+    const confirmMessage = `Are you sure you want to delete ${categoryCount} selected categor${categoryCount !== 1 ? 'ies' : 'y'}?${cascadeWarning}`;
+    
+    if (window.confirm(confirmMessage)) {
+      try {
+        const ids = Array.from(selectedCategories);
+        const response = await categoriesApi.deleteMultiple(ids);
+        if (response.success) {
+          const { deleted, failed, warnings } = response.data;
+          
+          let message = `Successfully deleted ${deleted} categor${deleted !== 1 ? 'ies' : 'y'}`;
+          
+          if (warnings && warnings.length > 0) {
+            message += `\n\nCascade deletions:\n${warnings.join('\n')}`;
+          }
+          
+          if (failed.length > 0) {
+            const failedDetails = failed.map(f => `ID ${f.id}: ${f.reason}`).join('\n');
+            message += `\n\nFailed to delete ${failed.length} categor${failed.length !== 1 ? 'ies' : 'y'}:\n${failedDetails}`;
+          }
+          
+          alert(message);
+          setSelectedCategories(new Set());
+          // Refresh the list
+          window.location.reload();
+        } else {
+          alert('Failed to delete categories');
+        }
+      } catch (error) {
+        console.error('Error deleting categories:', error);
+        alert('Failed to delete categories');
       }
     }
   };
@@ -127,7 +175,12 @@ export default function AdminCategoriesPage() {
                 <Button variant="outline" size="sm">
                   Bulk Edit
                 </Button>
-                <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-destructive hover:text-destructive"
+                  onClick={handleDeleteSelected}
+                >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Delete Selected
                 </Button>

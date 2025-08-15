@@ -88,6 +88,48 @@ export const deleteCategory = asyncHandler(async (req: Request, res: Response) =
   ));
 });
 
+export const deleteCategories = asyncHandler(async (req: Request, res: Response) => {
+  const { ids } = req.body;
+  
+  if (!Array.isArray(ids) || ids.length === 0) {
+    res.status(400).json(createApiResponse(
+      false,
+      null,
+      'Category IDs array is required'
+    ));
+    return;
+  }
+
+  const result = await categoryService.deleteCategories(ids);
+
+  let message = `Successfully deleted ${result.deleted} categor${result.deleted !== 1 ? 'ies' : 'y'}`;
+  
+  if (result.failed.length > 0) {
+    message += `. Failed to delete ${result.failed.length} categor${result.failed.length !== 1 ? 'ies' : 'y'}`;
+  }
+  
+  if (result.warnings.length > 0) {
+    message += `. Warning: ${result.warnings.join('. ')}`;
+  }
+
+  res.json(createApiResponse(
+    true,
+    result,
+    message
+  ));
+});
+
+export const getCategoryDeletionPreview = asyncHandler(async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  const preview = await categoryService.getCategoryDeletionPreview(id);
+
+  res.json(createApiResponse(
+    true,
+    preview,
+    'Category deletion preview retrieved successfully'
+  ));
+});
+
 export const getMainCategories = asyncHandler(async (req: Request, res: Response) => {
   const categories = await categoryService.getMainCategories();
 

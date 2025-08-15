@@ -81,6 +81,11 @@ export const productsApi = {
   delete: async (id: number): Promise<ApiResponse<null>> => {
     const response = await api.delete(`/products/${id}`);
     return response.data;
+  },
+
+  deleteMultiple: async (ids: number[]): Promise<ApiResponse<{ deleted: number; failed: number[] }>> => {
+    const response = await api.post('/products/bulk/delete', { ids });
+    return response.data;
   }
 };
 
@@ -118,6 +123,11 @@ export const categoriesApi = {
 
   delete: async (id: number): Promise<ApiResponse<null>> => {
     const response = await api.delete(`/categories/${id}`);
+    return response.data;
+  },
+
+  deleteMultiple: async (ids: number[]): Promise<ApiResponse<{ deleted: number; failed: { id: number; reason: string }[]; warnings: string[] }>> => {
+    const response = await api.post('/categories/bulk/delete', { ids });
     return response.data;
   }
 };

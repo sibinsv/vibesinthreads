@@ -87,14 +87,45 @@ export default function AdminProductsPage() {
   const handleDeleteProduct = async (productId: number) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        // This would need to be implemented in the API
-        // await productsApi.delete(productId);
-        console.log('Delete product:', productId);
-        // Refresh the list
-        window.location.reload();
+        const response = await productsApi.delete(productId);
+        if (response.success) {
+          alert('Product deleted successfully');
+          // Refresh the list
+          window.location.reload();
+        } else {
+          alert('Failed to delete product');
+        }
       } catch (error) {
         console.error('Error deleting product:', error);
         alert('Failed to delete product');
+      }
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedProducts.size === 0) return;
+    
+    const productCount = selectedProducts.size;
+    if (window.confirm(`Are you sure you want to delete ${productCount} selected product${productCount !== 1 ? 's' : ''}? This action cannot be undone.`)) {
+      try {
+        const ids = Array.from(selectedProducts);
+        const response = await productsApi.deleteMultiple(ids);
+        if (response.success) {
+          const { deleted, failed } = response.data;
+          if (failed.length > 0) {
+            alert(`Successfully deleted ${deleted} product(s). Failed to delete ${failed.length} product(s).`);
+          } else {
+            alert(`Successfully deleted ${deleted} product(s)`);
+          }
+          setSelectedProducts(new Set());
+          // Refresh the list
+          window.location.reload();
+        } else {
+          alert('Failed to delete products');
+        }
+      } catch (error) {
+        console.error('Error deleting products:', error);
+        alert('Failed to delete products');
       }
     }
   };
@@ -166,7 +197,12 @@ export default function AdminProductsPage() {
                 <Button variant="outline" size="sm">
                   Bulk Edit
                 </Button>
-                <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-destructive hover:text-destructive"
+                  onClick={handleDeleteSelected}
+                >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Delete Selected
                 </Button>

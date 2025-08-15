@@ -180,6 +180,33 @@ export class ProductService {
     });
   }
 
+  async deleteProducts(ids: number[]): Promise<{ deleted: number; failed: number[] }> {
+    if (!ids || ids.length === 0) {
+      throw new AppError('No product IDs provided', 400);
+    }
+
+    const existingProducts = await prisma.product.findMany({
+      where: { id: { in: ids } },
+      select: { id: true }
+    });
+
+    const existingIds = existingProducts.map(p => p.id);
+    const nonExistentIds = ids.filter(id => !existingIds.includes(id));
+
+    if (existingIds.length === 0) {
+      throw new AppError('No valid products found to delete', 404);
+    }
+
+    const result = await prisma.product.deleteMany({
+      where: { id: { in: existingIds } }
+    });
+
+    return {
+      deleted: result.count,
+      failed: nonExistentIds
+    };
+  }
+
   async getFeaturedProducts(limit: number = 8): Promise<ProductWithImages[]> {
     const products = await prisma.product.findMany({
       where: {

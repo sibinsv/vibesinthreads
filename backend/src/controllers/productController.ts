@@ -135,6 +135,27 @@ export const deleteProduct = asyncHandler(async (req: Request, res: Response) =>
   ));
 });
 
+export const deleteProducts = asyncHandler(async (req: Request, res: Response) => {
+  const { ids } = req.body;
+  
+  if (!Array.isArray(ids) || ids.length === 0) {
+    res.status(400).json(createApiResponse(
+      false,
+      null,
+      'Product IDs array is required'
+    ));
+    return;
+  }
+
+  const result = await productService.deleteProducts(ids);
+
+  res.json(createApiResponse(
+    true,
+    result,
+    `Successfully deleted ${result.deleted} product(s)${result.failed.length > 0 ? `. Failed to delete ${result.failed.length} product(s).` : ''}`
+  ));
+});
+
 export const getFeaturedProducts = asyncHandler(async (req: Request, res: Response) => {
   const limit = req.query.limit ? parseInt(req.query.limit as string) : 8;
   const products = await productService.getFeaturedProducts(limit);
