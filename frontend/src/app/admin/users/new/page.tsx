@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/useToast';
 
 interface CreateUserForm {
   email: string;
@@ -54,6 +55,7 @@ const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 export default function NewUserPage() {
   const router = useRouter();
+  const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -105,7 +107,7 @@ export default function NewUserPage() {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        alert('Authentication required. Please login again.');
+        toast.error('Authentication required. Please login again.');
         router.push('/admin/login');
         return;
       }
@@ -138,11 +140,11 @@ export default function NewUserPage() {
         throw new Error(result.message || 'Failed to create user');
       }
 
-      alert('User created successfully!');
+      toast.success('User created successfully!');
       router.push('/admin/users');
     } catch (error) {
       console.error('Create user error:', error);
-      alert(error instanceof Error ? error.message : 'Failed to create user');
+      toast.error(error instanceof Error ? error.message : 'Failed to create user');
     } finally {
       setIsLoading(false);
     }

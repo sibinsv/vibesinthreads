@@ -8,6 +8,8 @@ import { Product, Category } from '@/lib/types';
 import { productsApi, categoriesApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { useToast } from '@/hooks/useToast';
 import { formatPriceSimple } from '@/lib/utils';
 
 interface UploadedImage {
@@ -46,6 +48,7 @@ interface ProductFormData {
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [productId, setProductId] = useState<number | null>(null);
+  const toast = useToast();
   
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
@@ -72,6 +75,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, isDeleting: false });
+  const [cancelModal, setCancelModal] = useState({ isOpen: false });
 
   // Initialize productId from params
   useEffect(() => {
@@ -135,7 +140,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             }))
           });
         } else {
-          alert('Product not found');
+          toast.error('Product not found');
           router.push('/admin/products');
         }
 
@@ -144,7 +149,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         }
       } catch (error) {
         console.error('Error loading data:', error);
-        alert('Failed to load product data');
+        toast.error('Failed to load product data');
         router.push('/admin/products');
       } finally {
         setIsLoading(false);
@@ -178,7 +183,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     e.preventDefault();
     
     if (!formData.name.trim() || !formData.slug.trim() || formData.categoryId === 0) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -197,40 +202,49 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       const response = await productsApi.update(productId, updateData);
       
       if (response.success) {
-        alert('Product updated successfully!');
+        toast.success('Product updated successfully!');
         router.push('/admin/products');
       } else {
-        alert('Failed to update product: ' + (response.error || 'Unknown error'));
+        toast.error('Failed to update product: ' + (response.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error updating product:', error);
-      alert('Failed to update product. Please try again.');
+      toast.error('Failed to update product. Please try again.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-      try {
-        const response = await productsApi.delete(productId);
-        if (response.success) {
-          alert('Product deleted successfully');
-          router.push('/admin/products');
-        } else {
-          alert('Failed to delete product');
-        }
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        alert('Failed to delete product');
+  const handleDelete = () => {
+    setDeleteModal({ isOpen: true, isDeleting: false });
+  };
+  
+  const confirmDelete = async () => {
+    setDeleteModal(prev => ({ ...prev, isDeleting: true }));
+    
+    try {
+      const response = await productsApi.delete(productId);
+      if (response.success) {
+        toast.success('Product deleted successfully');
+        router.push('/admin/products');
+      } else {
+        toast.error('Failed to delete product');
       }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Failed to delete product');
+    } finally {
+      setDeleteModal({ isOpen: false, isDeleting: false });
     }
   };
 
   const handleCancel = () => {
-    if (window.confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-      router.push('/admin/products');
-    }
+    setCancelModal({ isOpen: true });
+  };
+  
+  const confirmCancel = () => {
+    setCancelModal({ isOpen: false });
+    router.push('/admin/products');
   };
 
   if (isLoading || productId === null) {
@@ -648,6 +662,31 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
       </form>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => !deleteModal.isDeleting && setDeleteModal({ isOpen: false, isDeleting: false })}
+        onConfirm={confirmDelete}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${formData.name}"?\n\nThis action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={deleteModal.isDeleting}
+      />
+
+      {/* Cancel Confirmation Modal */}
+      <ConfirmModal
+        isOpen={cancelModal.isOpen}
+        onClose={() => setCancelModal({ isOpen: false })}
+        onConfirm={confirmCancel}
+        title="Cancel Editing"
+        message="Are you sure you want to cancel? Any unsaved changes will be lost."
+        confirmText="Yes, Cancel"
+        cancelText="Continue Editing"
+        variant="warning"
+      />
     </div>
   );
 }

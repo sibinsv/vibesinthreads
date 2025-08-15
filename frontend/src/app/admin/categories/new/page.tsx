@@ -8,6 +8,8 @@ import { Category } from '@/lib/types';
 import { categoriesApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
+import { useToast } from '@/hooks/useToast';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 interface UploadedImage {
   id: string;
@@ -30,6 +32,7 @@ interface CategoryFormData {
 
 export default function NewCategoryPage() {
   const router = useRouter();
+  const toast = useToast();
   const [formData, setFormData] = useState<CategoryFormData>({
     name: '',
     slug: '',
@@ -40,6 +43,7 @@ export default function NewCategoryPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
 
   // Fetch categories for parent selection
   useEffect(() => {
@@ -80,7 +84,7 @@ export default function NewCategoryPage() {
     e.preventDefault();
     
     if (!formData.name.trim() || !formData.slug.trim()) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -101,7 +105,7 @@ export default function NewCategoryPage() {
       const response = await categoriesApi.create(categoryData);
       
       if (response.success) {
-        alert('Category created successfully!');
+        toast.success('Category created successfully!');
         router.push('/admin/categories');
       } else {
         throw new Error(response.error || 'Failed to create category');
@@ -111,11 +115,11 @@ export default function NewCategoryPage() {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create category. Please try again.';
       
       if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
-        alert('Authentication required. Please log in as admin first.');
+        toast.error('Authentication required. Please log in as admin first.');
       } else if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
-        alert('Admin access required. Please log in with admin credentials.');
+        toast.error('Admin access required. Please log in with admin credentials.');
       } else {
-        alert(`Failed to create category: ${errorMessage}`);
+        toast.error(`Failed to create category: ${errorMessage}`);
       }
     } finally {
       setIsSaving(false);
@@ -123,9 +127,11 @@ export default function NewCategoryPage() {
   };
 
   const handleCancel = () => {
-    if (window.confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-      router.push('/admin/categories');
-    }
+    setCancelModal(true);
+  };
+
+  const confirmCancel = () => {
+    router.push('/admin/categories');
   };
 
   return (
@@ -274,6 +280,18 @@ export default function NewCategoryPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={cancelModal}
+        onClose={() => setCancelModal(false)}
+        onConfirm={confirmCancel}
+        title="Cancel Changes"
+        message="Are you sure you want to cancel? Any unsaved changes will be lost."
+        confirmText="Yes, Cancel"
+        cancelText="Continue Editing"
+        variant="warning"
+      />
     </div>
   );
 }

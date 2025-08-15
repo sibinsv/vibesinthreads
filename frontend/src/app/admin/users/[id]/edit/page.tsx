@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/useToast';
 
 interface User {
   id: number;
@@ -45,6 +46,7 @@ export default function EditUserPage() {
   const params = useParams();
   const router = useRouter();
   const userId = params.id as string;
+  const toast = useToast();
   
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,7 +82,7 @@ export default function EditUserPage() {
       setUser(result.data.user);
     } catch (error) {
       console.error('Error fetching user:', error);
-      alert('Failed to load user details');
+      toast.error('Failed to load user details');
       router.push('/admin/users');
     } finally {
       setIsLoading(false);
@@ -139,11 +141,11 @@ export default function EditUserPage() {
         throw new Error(result.message || 'Failed to update user');
       }
 
-      alert('User updated successfully!');
+      toast.success('User updated successfully!');
       router.push(`/admin/users/${userId}`);
     } catch (error) {
       console.error('Update user error:', error);
-      alert(error instanceof Error ? error.message : 'Failed to update user');
+      toast.error(error instanceof Error ? error.message : 'Failed to update user');
     } finally {
       setIsSaving(false);
     }

@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { formatPriceSimple, cn } from '@/lib/utils';
+import { useToast } from '@/hooks/useToast';
 
 interface User {
   id: number;
@@ -64,6 +65,7 @@ export default function UserDetailPage() {
   const params = useParams();
   const router = useRouter();
   const userId = params.id as string;
+  const toast = useToast();
   
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -141,10 +143,10 @@ export default function UserDetailPage() {
       const result = await response.json();
       setUser(prev => prev ? { ...prev, isActive: result.data.user.isActive } : null);
       
-      alert(`User ${result.data.user.isActive ? 'activated' : 'deactivated'} successfully`);
+      toast.success(`User ${result.data.user.isActive ? 'activated' : 'deactivated'} successfully`);
     } catch (error) {
       console.error('Error updating user status:', error);
-      alert(error instanceof Error ? error.message : 'Failed to update user status');
+      toast.error(error instanceof Error ? error.message : 'Failed to update user status');
     } finally {
       setIsUpdatingStatus(false);
     }

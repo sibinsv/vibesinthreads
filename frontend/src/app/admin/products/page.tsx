@@ -16,6 +16,8 @@ import {
 import { Product, ProductFilters, PaginationParams } from '@/lib/types';
 import { productsApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { useToast } from '@/hooks/useToast';
 import { formatPriceSimple, cn } from '@/lib/utils';
 
 export default function AdminProductsPage() {
@@ -32,6 +34,16 @@ export default function AdminProductsPage() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    productId: number | null;
+    productName: string;
+    isMultiple: boolean;
+    count?: number;
+  }>({ isOpen: false, productId: null, productName: '', isMultiple: false });
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  const toast = useToast();
 
   // Fetch products
   useEffect(() => {
@@ -48,6 +60,7 @@ export default function AdminProductsPage() {
         }
       } catch (error) {
         console.error('Error fetching products:', error);
+        toast.error('Failed to load products');
         setProducts([]);
       } finally {
         setIsLoading(false);
@@ -84,50 +97,70 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleDeleteProduct = async (productId: number) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        const response = await productsApi.delete(productId);
-        if (response.success) {
-          alert('Product deleted successfully');
-          // Refresh the list
-          window.location.reload();
-        } else {
-          alert('Failed to delete product');
-        }
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        alert('Failed to delete product');
-      }
-    }
+  const handleDeleteProduct = (productId: number) => {
+    const product = products.find(p => p.id === productId);
+    setDeleteModal({
+      isOpen: true,
+      productId,
+      productName: product?.name || 'Unknown',
+      isMultiple: false,
+    });
   };
-
-  const handleDeleteSelected = async () => {
-    if (selectedProducts.size === 0) return;
+  
+  const confirmDelete = async () => {
+    if (!deleteModal.productId && !deleteModal.isMultiple) return;
     
-    const productCount = selectedProducts.size;
-    if (window.confirm(`Are you sure you want to delete ${productCount} selected product${productCount !== 1 ? 's' : ''}? This action cannot be undone.`)) {
-      try {
+    setIsDeleting(true);
+    
+    try {
+      if (deleteModal.isMultiple) {
+        // Handle bulk delete
         const ids = Array.from(selectedProducts);
         const response = await productsApi.deleteMultiple(ids);
         if (response.success) {
           const { deleted, failed } = response.data;
           if (failed.length > 0) {
-            alert(`Successfully deleted ${deleted} product(s). Failed to delete ${failed.length} product(s).`);
+            toast.warning(`Successfully deleted ${deleted} product(s). Failed to delete ${failed.length} product(s).`);
           } else {
-            alert(`Successfully deleted ${deleted} product(s)`);
+            toast.success(`Successfully deleted ${deleted} product(s)`);
           }
           setSelectedProducts(new Set());
           // Refresh the list
           window.location.reload();
         } else {
-          alert('Failed to delete products');
+          toast.error('Failed to delete products');
         }
-      } catch (error) {
-        console.error('Error deleting products:', error);
-        alert('Failed to delete products');
+      } else {
+        // Handle single delete
+        const response = await productsApi.delete(deleteModal.productId!);
+        if (response.success) {
+          toast.success('Product deleted successfully');
+          // Refresh the list
+          window.location.reload();
+        } else {
+          toast.error('Failed to delete product');
+        }
       }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Failed to delete product');
+    } finally {
+      setIsDeleting(false);
+      setDeleteModal({ isOpen: false, productId: null, productName: '', isMultiple: false });
     }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedProducts.size === 0) return;
+    
+    const productCount = selectedProducts.size;
+    setDeleteModal({
+      isOpen: true,
+      productId: null,
+      productName: '',
+      isMultiple: true,
+      count: productCount,
+    });
   };
 
   return (
@@ -436,6 +469,23 @@ export default function AdminProductsPage() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => !isDeleting && setDeleteModal({ isOpen: false, productId: null, productName: '', isMultiple: false })}
+        onConfirm={confirmDelete}
+        title={deleteModal.isMultiple ? 'Delete Products' : 'Delete Product'}
+        message={
+          deleteModal.isMultiple
+            ? `Are you sure you want to delete ${deleteModal.count} selected product${deleteModal.count !== 1 ? 's' : ''}?\n\nThis action cannot be undone.`
+            : `Are you sure you want to delete "${deleteModal.productName}"?\n\nThis action cannot be undone.`
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

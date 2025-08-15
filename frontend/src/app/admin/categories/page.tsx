@@ -15,12 +15,24 @@ import {
 import { Category } from '@/lib/types';
 import { categoriesApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { useToast } from '@/hooks/useToast';
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<number>>(new Set());
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    categoryId: number | null;
+    categoryName: string;
+    isMultiple: boolean;
+    count?: number;
+  }>({ isOpen: false, categoryId: null, categoryName: '', isMultiple: false });
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  const toast = useToast();
 
   // Fetch categories
   useEffect(() => {
@@ -34,6 +46,7 @@ export default function AdminCategoriesPage() {
         }
       } catch (error) {
         console.error('Error fetching categories:', error);
+        toast.error('Failed to load categories');
         setCategories([]);
       } finally {
         setIsLoading(false);
@@ -70,38 +83,24 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const handleDeleteCategory = async (categoryId: number) => {
-    const cascadeWarning = "\n\n⚠️ WARNING: If this category has subcategories, they will ALL be deleted too. This cannot be undone.";
-    const confirmMessage = `Are you sure you want to delete this category?${cascadeWarning}`;
-    
-    if (window.confirm(confirmMessage)) {
-      try {
-        const response = await categoriesApi.delete(categoryId);
-        if (response.success) {
-          alert('Category deleted successfully');
-          // Refresh the list
-          window.location.reload();
-        } else {
-          alert('Failed to delete category');
-        }
-      } catch (error) {
-        console.error('Error deleting category:', error);
-        alert('Failed to delete category');
-      }
-    }
+  const handleDeleteCategory = (categoryId: number) => {
+    const category = categories.find(c => c.id === categoryId);
+    setDeleteModal({
+      isOpen: true,
+      categoryId,
+      categoryName: category?.name || 'Unknown',
+      isMultiple: false,
+    });
   };
-
-  const handleDeleteSelected = async () => {
-    if (selectedCategories.size === 0) return;
+  
+  const confirmDelete = async () => {
+    if (!deleteModal.categoryId && !deleteModal.isMultiple) return;
     
-    const categoryCount = selectedCategories.size;
+    setIsDeleting(true);
     
-    // Show warning about cascading deletion
-    const cascadeWarning = "\n\n⚠️ WARNING: Categories with subcategories will cascade delete ALL their subcategories. This cannot be undone.";
-    const confirmMessage = `Are you sure you want to delete ${categoryCount} selected categor${categoryCount !== 1 ? 'ies' : 'y'}?${cascadeWarning}`;
-    
-    if (window.confirm(confirmMessage)) {
-      try {
+    try {
+      if (deleteModal.isMultiple) {
+        // Handle bulk delete
         const ids = Array.from(selectedCategories);
         const response = await categoriesApi.deleteMultiple(ids);
         if (response.success) {
@@ -110,26 +109,53 @@ export default function AdminCategoriesPage() {
           let message = `Successfully deleted ${deleted} categor${deleted !== 1 ? 'ies' : 'y'}`;
           
           if (warnings && warnings.length > 0) {
-            message += `\n\nCascade deletions:\n${warnings.join('\n')}`;
+            toast.warning(`${message}\n\nCascade deletions occurred:\n${warnings.join('\n')}`);
+          } else {
+            toast.success(message);
           }
           
           if (failed.length > 0) {
             const failedDetails = failed.map(f => `ID ${f.id}: ${f.reason}`).join('\n');
-            message += `\n\nFailed to delete ${failed.length} categor${failed.length !== 1 ? 'ies' : 'y'}:\n${failedDetails}`;
+            toast.error(`Failed to delete ${failed.length} categor${failed.length !== 1 ? 'ies' : 'y'}:\n${failedDetails}`);
           }
           
-          alert(message);
           setSelectedCategories(new Set());
           // Refresh the list
           window.location.reload();
         } else {
-          alert('Failed to delete categories');
+          toast.error('Failed to delete categories');
         }
-      } catch (error) {
-        console.error('Error deleting categories:', error);
-        alert('Failed to delete categories');
+      } else {
+        // Handle single delete
+        const response = await categoriesApi.delete(deleteModal.categoryId!);
+        if (response.success) {
+          toast.success('Category deleted successfully');
+          // Refresh the list
+          window.location.reload();
+        } else {
+          toast.error('Failed to delete category');
+        }
       }
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast.error('Failed to delete category');
+    } finally {
+      setIsDeleting(false);
+      setDeleteModal({ isOpen: false, categoryId: null, categoryName: '', isMultiple: false });
     }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedCategories.size === 0) return;
+    
+    const categoryCount = selectedCategories.size;
+    setDeleteModal({
+      isOpen: true,
+      categoryId: null,
+      categoryName: '',
+      isMultiple: true,
+      count: categoryCount,
+    });
   };
 
   return (
@@ -344,6 +370,23 @@ export default function AdminCategoriesPage() {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => !isDeleting && setDeleteModal({ isOpen: false, categoryId: null, categoryName: '', isMultiple: false })}
+        onConfirm={confirmDelete}
+        title={deleteModal.isMultiple ? 'Delete Categories' : 'Delete Category'}
+        message={
+          deleteModal.isMultiple
+            ? `Are you sure you want to delete ${deleteModal.count} selected categor${deleteModal.count !== 1 ? 'ies' : 'y'}?\n\n⚠️ WARNING: Categories with subcategories will cascade delete ALL their subcategories. This cannot be undone.`
+            : `Are you sure you want to delete "${deleteModal.categoryName}"?\n\n⚠️ WARNING: If this category has subcategories, they will ALL be deleted too. This cannot be undone.`
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

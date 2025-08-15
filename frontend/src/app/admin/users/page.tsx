@@ -20,10 +20,13 @@ import {
 import { User, userService, UserFilters } from '@/lib/api/users';
 import { Button } from '@/components/ui/Button';
 import { formatPriceSimple, cn } from '@/lib/utils';
+import { useToast } from '@/hooks/useToast';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const toast = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -36,6 +39,12 @@ export default function AdminUsersPage() {
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    userId: number | null;
+    userName: string;
+  }>({ isOpen: false, userId: null, userName: '' });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -62,7 +71,7 @@ export default function AdminUsersPage() {
           
           // Handle authentication errors
           if (response.message?.includes('Authentication') || response.message?.includes('Unauthorized')) {
-            alert('Please login again to continue');
+            toast.error('Please login again to continue');
             window.location.href = '/admin/login';
           }
         }
@@ -91,31 +100,44 @@ export default function AdminUsersPage() {
               : user
           )
         );
-        alert(response.message || `User ${newStatus ? 'activated' : 'deactivated'} successfully`);
+        toast.success(response.message || `User ${newStatus ? 'activated' : 'deactivated'} successfully`);
       } else {
         throw new Error(response.message || 'Failed to update user status');
       }
     } catch (error) {
       console.error('Error updating user status:', error);
-      alert(error instanceof Error ? error.message : 'Failed to update user status');
+      toast.error(error instanceof Error ? error.message : 'Failed to update user status');
     }
   };
 
-  const handleDeleteUser = async (userId: number) => {
-    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      try {
-        const response = await userService.deleteUser(userId);
-        
-        if (response.success) {
-          setUsers(prev => prev.filter(user => user.id !== userId));
-          alert(response.message || 'User deleted successfully');
-        } else {
-          throw new Error(response.message || 'Failed to delete user');
-        }
-      } catch (error) {
-        console.error('Error deleting user:', error);
-        alert(error instanceof Error ? error.message : 'Failed to delete user');
+  const handleDeleteUser = (userId: number) => {
+    const user = users.find(u => u.id === userId);
+    setDeleteModal({
+      isOpen: true,
+      userId,
+      userName: user?.name || 'Unknown User'
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteModal.userId) return;
+    
+    setIsDeleting(true);
+    try {
+      const response = await userService.deleteUser(deleteModal.userId);
+      
+      if (response.success) {
+        setUsers(prev => prev.filter(user => user.id !== deleteModal.userId));
+        toast.success(response.message || 'User deleted successfully');
+      } else {
+        throw new Error(response.message || 'Failed to delete user');
       }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to delete user');
+    } finally {
+      setIsDeleting(false);
+      setDeleteModal({ isOpen: false, userId: null, userName: '' });
     }
   };
 
@@ -511,6 +533,19 @@ export default function AdminUsersPage() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => !isDeleting && setDeleteModal({ isOpen: false, userId: null, userName: '' })}
+        onConfirm={confirmDelete}
+        title="Delete User"
+        message={`Are you sure you want to delete "${deleteModal.userName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

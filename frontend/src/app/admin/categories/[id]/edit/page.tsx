@@ -8,6 +8,8 @@ import { Category } from '@/lib/types';
 import { categoriesApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
+import { useToast } from '@/hooks/useToast';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 interface UploadedImage {
   id: string;
@@ -31,6 +33,7 @@ interface CategoryFormData {
 export default function EditCategoryPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [categoryId, setCategoryId] = useState<number | null>(null);
+  const toast = useToast();
   
   const [formData, setFormData] = useState<CategoryFormData>({
     name: '',
@@ -43,6 +46,9 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Initialize categoryId from params
   useEffect(() => {
@@ -91,7 +97,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
             parentId: category.parentId
           });
         } else {
-          alert('Category not found');
+          toast.error('Category not found');
           router.push('/admin/categories');
         }
 
@@ -102,7 +108,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
         }
       } catch (error) {
         console.error('Error loading data:', error);
-        alert('Failed to load category data');
+        toast.error('Failed to load category data');
         router.push('/admin/categories');
       } finally {
         setIsLoading(false);
@@ -135,7 +141,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
     e.preventDefault();
     
     if (!formData.name.trim() || !formData.slug.trim()) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -153,40 +159,48 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
       const response = await categoriesApi.update(categoryId, updateData);
       
       if (response.success) {
-        alert('Category updated successfully!');
+        toast.success('Category updated successfully!');
         router.push('/admin/categories');
       } else {
-        alert('Failed to update category: ' + (response.error || 'Unknown error'));
+        toast.error('Failed to update category: ' + (response.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error updating category:', error);
-      alert('Failed to update category. Please try again.');
+      toast.error('Failed to update category. Please try again.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
-      try {
-        const response = await categoriesApi.delete(categoryId);
-        if (response.success) {
-          alert('Category deleted successfully');
-          router.push('/admin/categories');
-        } else {
-          alert('Failed to delete category');
-        }
-      } catch (error) {
-        console.error('Error deleting category:', error);
-        alert('Failed to delete category');
+  const handleDelete = () => {
+    setDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await categoriesApi.delete(categoryId);
+      if (response.success) {
+        toast.success('Category deleted successfully');
+        router.push('/admin/categories');
+      } else {
+        toast.error('Failed to delete category');
       }
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast.error('Failed to delete category');
+    } finally {
+      setIsDeleting(false);
+      setDeleteModal(false);
     }
   };
 
   const handleCancel = () => {
-    if (window.confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-      router.push('/admin/categories');
-    }
+    setCancelModal(true);
+  };
+
+  const confirmCancel = () => {
+    router.push('/admin/categories');
   };
 
   if (isLoading || categoryId === null) {
@@ -375,6 +389,30 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modals */}
+      <ConfirmModal
+        isOpen={deleteModal}
+        onClose={() => !isDeleting && setDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title="Delete Category"
+        message="Are you sure you want to delete this category? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
+
+      <ConfirmModal
+        isOpen={cancelModal}
+        onClose={() => setCancelModal(false)}
+        onConfirm={confirmCancel}
+        title="Cancel Changes"
+        message="Are you sure you want to cancel? Any unsaved changes will be lost."
+        confirmText="Yes, Cancel"
+        cancelText="Continue Editing"
+        variant="warning"
+      />
     </div>
   );
 }

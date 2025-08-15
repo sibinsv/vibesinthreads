@@ -8,6 +8,7 @@ import { Category, CreateProductData } from '@/lib/types';
 import { categoriesApi, productsApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
+import { useToast } from '@/hooks/useToast';
 import { generateSlug } from '@/lib/utils';
 
 interface UploadedImage {
@@ -36,6 +37,7 @@ interface ProductFormData extends CreateProductData {
 
 export default function NewProductPage() {
   const router = useRouter();
+  const toast = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -201,7 +203,7 @@ export default function NewProductPage() {
       if (response.success) {
         router.push('/admin/products');
       } else {
-        alert('Failed to create product');
+        toast.error('Failed to create product');
       }
     } catch (error) {
       console.error('Error creating product:', error);

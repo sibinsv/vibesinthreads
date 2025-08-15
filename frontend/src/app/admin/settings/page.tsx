@@ -16,6 +16,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useToast } from '@/hooks/useToast';
 
 interface StoreSettings {
   // General
@@ -71,6 +72,7 @@ interface StoreSettings {
 }
 
 export default function AdminSettingsPage() {
+  const toast = useToast();
   const [settings, setSettings] = useState<StoreSettings>({
     // General
     storeName: 'Vibes in Threads',
@@ -141,10 +143,10 @@ export default function AdminSettingsPage() {
       // Mock API call
       console.log('Saving settings:', settings);
       await new Promise(resolve => setTimeout(resolve, 1000));
-      alert('Settings saved successfully!');
+      toast.success('Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error);
-      alert('Failed to save settings. Please try again.');
+      toast.error('Failed to save settings. Please try again.');
     } finally {
       setIsSaving(false);
     }
