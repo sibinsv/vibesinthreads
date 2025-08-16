@@ -195,6 +195,8 @@ echo "✅ Local deployment packages cleaned up"
 ```bash
 # SSH to production server
 ssh do-droplet
+
+# NOTE: Production database is standardized at /opt/database/production.db
 ```
 
 ### 11. Pre-Deployment System Check
@@ -246,13 +248,13 @@ fi
 
 ### 14. Copy Database to Backup Directory
 ```bash
-# Backup production database (always located at /opt/database/production.db)
+# Backup production database (standardized location: /opt/database/production.db)
 if [ -f "/opt/database/production.db" ]; then
     sudo cp "/opt/database/production.db" "/opt/backup/${BACKUP_TIMESTAMP}/production.db"
     echo "✅ Database backed up from /opt/database/production.db"
 else
     echo "⚠️ Production database not found at /opt/database/production.db"
-    echo "📁 Ensuring /opt/database directory exists for first deployment"
+    echo "📁 Ensuring /opt/database directory exists"
     sudo mkdir -p "/opt/database"
     echo "ℹ️ Database will be created at /opt/database/production.db during migration"
 fi
@@ -366,19 +368,23 @@ echo "✅ Database migrations completed at /opt/database/production.db"
 ```bash
 # Verify all required environment variables are configured
 echo "🔍 Validating environment variables..."
-cd "/var/www/vibesinthreads-app/backend"
+cd "/var/www/vibesinthreads-app"
 
-# Check for any remaining placeholder values
-if grep -q "REPLACE_WITH" .env.production; then
-    echo "❌ Missing environment variables found:"
-    grep "REPLACE_WITH" .env.production
+# Note: PM2 loads environment variables from ecosystem.config.js (not .env files)
+# This avoids the env_file reliability issues encountered in previous deployments
+
+# Check PM2 ecosystem config for any remaining placeholder values
+if grep -q "REPLACE_WITH" ecosystem.config.js; then
+    echo "❌ Missing environment variables found in PM2 ecosystem:"
+    grep "REPLACE_WITH" ecosystem.config.js
     echo "⚠️ Please ensure all variables are properly configured"
 else
-    echo "✅ All environment variables configured"
+    echo "✅ All environment variables configured in PM2 ecosystem"
 fi
 
 # Test database connection
 echo "🔍 Testing database connection..."
+cd backend
 sudo -u root npm run prisma:validate && echo "✅ Database connection valid" || echo "❌ Database connection failed"
 ```
 
@@ -387,24 +393,78 @@ sudo -u root npm run prisma:validate && echo "✅ Database connection valid" || 
 # Navigate to application root
 cd "/var/www/vibesinthreads-app"
 
-# Handle JWT secrets - only generate if not already set (preserve existing secrets)
-if grep -q "REPLACE_WITH_SECURE_RANDOM_STRING" backend/.env.production; then
+# Handle ecosystem.config.js update - merge new configuration with existing secrets
+echo "🔄 Updating ecosystem.config.js with new configuration while preserving secrets..."
+
+# Extract existing JWT secrets from current ecosystem config (if they exist)
+EXISTING_JWT_SECRET=$(grep "JWT_SECRET:" ecosystem.config.js | sed "s/.*JWT_SECRET: ['\"]\\([^'\"]*\\)['\"].*/\\1/")
+EXISTING_JWT_REFRESH_SECRET=$(grep "JWT_REFRESH_SECRET:" ecosystem.config.js | sed "s/.*JWT_REFRESH_SECRET: ['\"]\\([^'\"]*\\)['\"].*/\\1/")
+
+# Check if existing secrets are real (not placeholders)
+if [[ "$EXISTING_JWT_SECRET" =~ ^[a-f0-9]{64}$ ]] && [[ "$EXISTING_JWT_REFRESH_SECRET" =~ ^[a-f0-9]{64}$ ]]; then
+    echo "🔐 Found existing JWT secrets - preserving to maintain user sessions"
+    JWT_SECRET="$EXISTING_JWT_SECRET"
+    JWT_REFRESH_SECRET="$EXISTING_JWT_REFRESH_SECRET"
+else
     echo "🔐 Generating new JWT secrets for first deployment..."
     JWT_SECRET=$(openssl rand -hex 32)
     JWT_REFRESH_SECRET=$(openssl rand -hex 32)
-    
-    # Update backend environment with secure secrets
-    sudo sed -i "s/^JWT_SECRET=\"REPLACE_WITH_SECURE_RANDOM_STRING\"/JWT_SECRET=\"$JWT_SECRET\"/g" backend/.env.production
-    sudo sed -i "s/^JWT_REFRESH_SECRET=\"REPLACE_WITH_SECURE_RANDOM_STRING\"/JWT_REFRESH_SECRET=\"$JWT_REFRESH_SECRET\"/g" backend/.env.production
-    
-    echo "✅ New JWT secrets generated and configured"
-else
-    echo "🔐 Using existing JWT secrets (preserving user sessions)"
 fi
 
-# Verify the secrets are properly configured
-echo "🔍 Verifying JWT secrets configuration:"
-grep "JWT_SECRET=" backend/.env.production | head -2
+# Update ecosystem.config.js with new configuration including updated database path
+sudo tee ecosystem.config.js > /dev/null << EOF
+module.exports = {
+  apps: [
+    {
+      name: 'vibes-backend',
+      script: './backend/dist/index.js',
+      cwd: '/var/www/vibesinthreads-app',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 5000,
+        DATABASE_URL: 'file:/opt/database/production.db',
+        BASE_URL: 'https://vibesinthreads.store',
+        JWT_SECRET: '$JWT_SECRET',
+        JWT_REFRESH_SECRET: '$JWT_REFRESH_SECRET',
+        CORS_ORIGIN: 'https://vibesinthreads.store'
+      },
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      error_file: './logs/backend-error.log',
+      out_file: './logs/backend-out.log',
+      log_file: './logs/backend-combined.log',
+      time: true
+    },
+    {
+      name: 'vibes-frontend',
+      script: 'npm',
+      args: 'start',
+      cwd: '/var/www/vibesinthreads-app/frontend',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3000,
+        NEXT_PUBLIC_API_URL: 'https://vibesinthreads.store/api/v1'
+      },
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      error_file: './logs/frontend-error.log',
+      out_file: './logs/frontend-out.log',
+      log_file: './logs/frontend-combined.log',
+      time: true
+    }
+  ]
+};
+EOF
+
+echo "✅ Ecosystem configuration updated with standardized database path and preserved secrets"
+
+# Verify the configuration
+echo "🔍 Verifying updated ecosystem configuration:"
+grep -E "(DATABASE_URL|JWT_SECRET)" ecosystem.config.js
 
 # Start services using ecosystem config
 pm2 start ecosystem.config.js
@@ -517,7 +577,7 @@ sudo rm -rf "/var/www/vibesinthreads-app/frontend"
 sudo tar -xzf "/opt/backup/${LATEST_BACKUP}/previous-backend.tar.gz" -C "/var/www/vibesinthreads-app/"
 sudo tar -xzf "/opt/backup/${LATEST_BACKUP}/previous-frontend.tar.gz" -C "/var/www/vibesinthreads-app/"
 
-# Restore database to correct location
+# Restore database to standardized location
 sudo cp "/opt/backup/${LATEST_BACKUP}/production.db" "/opt/database/"
 
 # Restart services

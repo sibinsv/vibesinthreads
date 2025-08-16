@@ -7,11 +7,12 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 5000,
-        DATABASE_URL: 'file:./prisma/prod.db',
+        DATABASE_URL: 'file:/opt/database/production.db',
+        BASE_URL: 'https://vibesinthreads.store',
         // NOTE: JWT secrets should be replaced with secure random strings during deployment
         // Generate using: openssl rand -hex 32
-        JWT_SECRET: 'REPLACE_WITH_JWT_SECRET_DURING_DEPLOYMENT',
-        JWT_REFRESH_SECRET: 'REPLACE_WITH_JWT_REFRESH_SECRET_DURING_DEPLOYMENT',
+        JWT_SECRET: 'REPLACE_WITH_SECURE_RANDOM_STRING',
+        JWT_REFRESH_SECRET: 'REPLACE_WITH_SECURE_RANDOM_STRING',
         CORS_ORIGIN: 'https://vibesinthreads.store'
       },
       instances: 1,
