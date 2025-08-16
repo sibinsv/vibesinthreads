@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Eye } from 'lucide-react';
 import { Product } from '@/lib/types';
@@ -37,12 +36,11 @@ export default function ProductCard({ product, className }: ProductCardProps) {
       {/* Product Image */}
       <div className="relative aspect-[3/4] overflow-hidden bg-rose-50">
         <Link href={`/products/${product.slug}`}>
-          <Image
+          <img
             src={isHovered && hoverImage ? hoverImage.url : mainImage?.url || `https://picsum.photos/400/600?random=${product.id}`}
             alt={mainImage?.altText || product.name}
-            fill
             className={cn(
-              "object-cover transition-all duration-500",
+              "w-full h-full object-cover transition-all duration-500",
               imageLoaded ? "opacity-100" : "opacity-0",
               isHovered ? "scale-105" : "scale-100"
             )}

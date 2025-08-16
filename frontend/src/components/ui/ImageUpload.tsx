@@ -256,11 +256,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               <div key={image.id} className="relative bg-card border border-border rounded-lg overflow-hidden">
                 {/* Image */}
                 <div className="relative w-full h-64 bg-gray-100">
-                  <Image
+                  <img
                     src={image.thumbnailUrl || image.url}
                     alt={image.altText || image.filename}
-                    fill
-                    className="object-cover rounded"
+                    className="w-full h-full object-cover rounded"
                     onLoad={() => {
                       // Image loaded successfully
                     }}

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { ChevronLeft, ChevronRight, ZoomIn, X } from 'lucide-react';
 import { ProductImage } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -40,17 +39,15 @@ export default function ProductImageGallery({ images, productName, className }: 
     <div className={cn("space-y-4", className)}>
       {/* Main Image */}
       <div className="relative aspect-[3/4] bg-rose-50 rounded-lg overflow-hidden group">
-        <Image
+        <img
           src={currentImage?.url || `https://picsum.photos/400/600?random=gallery`}
           alt={currentImage?.altText || productName}
-          fill
           className={cn(
-            "object-cover transition-all duration-300",
+            "w-full h-full object-cover transition-all duration-300",
             imageLoaded ? "opacity-100" : "opacity-0"
           )}
           onLoad={() => setImageLoaded(true)}
           onError={() => setImageLoaded(true)}
-          priority
         />
 
         {/* Navigation Arrows */}
@@ -114,11 +111,10 @@ export default function ProductImageGallery({ images, productName, className }: 
               )}
               onClick={() => selectImage(index)}
             >
-              <Image
+              <img
                 src={image.url}
                 alt={image.altText || `${productName} view ${index + 1}`}
-                fill
-                className="object-cover"
+                className="w-full h-full object-cover"
               />
             </button>
           ))}
@@ -129,12 +125,11 @@ export default function ProductImageGallery({ images, productName, className }: 
       {isZoomOpen && (
         <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
           <div className="relative max-w-4xl max-h-full">
-            <Image
+            <img
               src={currentImage?.url || `https://picsum.photos/800/1000?random=zoom`}
               alt={currentImage?.altText || productName}
-              width={800}
-              height={1000}
               className="max-w-full max-h-full object-contain"
+              style={{ maxWidth: '800px', maxHeight: '1000px' }}
             />
             
             {/* Close Button */}

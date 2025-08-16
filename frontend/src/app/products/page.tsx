@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Filter, Grid, List, Search, SlidersHorizontal } from 'lucide-react';
 import { Product, Category, ProductFilters, PaginationParams } from '@/lib/types';
 import { productsApi, categoriesApi } from '@/lib/api';
@@ -18,14 +19,23 @@ const SORT_OPTIONS = [
   { value: 'name_desc', label: 'Name: Z to A' },
 ];
 
-export default function ProductsPage() {
+function ProductsPageContent() {
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  const [filters, setFilters] = useState<ProductFilters>({});
+  // Initialize filters from URL parameters
+  const [filters, setFilters] = useState<ProductFilters>(() => {
+    const initialFilters: ProductFilters = {};
+    const category = searchParams.get('category');
+    if (category) {
+      initialFilters.category = category;
+    }
+    return initialFilters;
+  });
   const [pagination, setPagination] = useState<PaginationParams>({
     page: 1,
     limit: 12,
@@ -252,5 +262,34 @@ export default function ProductsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-64 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-96 mb-8"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-rose-100">
+                  <div className="aspect-[3/4] bg-gray-200 animate-pulse" />
+                  <div className="p-4">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
+                    <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
+                    <div className="h-6 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <ProductsPageContent />
+    </Suspense>
   );
 }

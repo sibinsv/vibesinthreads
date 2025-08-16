@@ -151,11 +151,10 @@ export default function Home() {
               >
                 <div className="aspect-[4/3] bg-gradient-to-br from-rose-100 to-pink-100">
                   {category.image ? (
-                    <Image
+                    <img
                       src={category.image}
                       alt={category.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
                         // Fallback to placeholder if image fails to load
                         const target = e.target as HTMLImageElement;
