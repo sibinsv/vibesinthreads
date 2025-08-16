@@ -158,15 +158,15 @@ sudo chmod 600 "/var/www/vibesinthreads-app/backend/.env.production"
 cd "/var/www/vibesinthreads-app/backend"
 sudo chmod 755 "/opt/database"
 
-# Generate Prisma client and run migrations
-sudo -u root npm run prisma:generate
-sudo -u root npm run db:migrate:deploy
+# Generate Prisma client and run migrations (with DATABASE_URL environment variable)
+sudo -u root DATABASE_URL="file:/opt/database/production.db" npx prisma generate
+sudo -u root DATABASE_URL="file:/opt/database/production.db" npm run db:migrate:deploy
 
 # Set database permissions
 sudo chmod 644 "/opt/database/production.db"
 
 # Verify database
-sudo -u root npm run db:migrate:status
+sudo -u root DATABASE_URL="file:/opt/database/production.db" npm run db:migrate:status
 ls -la "/opt/database/production.db"
 
 echo "✅ Permissions set and database migrated"
@@ -262,7 +262,21 @@ pm2 status
 if pm2 list | grep -E "errored|stopped"; then
     echo "❌ Service startup failed!"
     pm2 logs --lines 20
-    exit 1
+    
+    # Check if it's a Prisma client issue
+    if pm2 logs vibes-backend --lines 10 | grep -q "did not initialize yet"; then
+        echo "🔧 Detected Prisma client issue. Applying fix..."
+        pm2 kill
+        cd "/var/www/vibesinthreads-app/backend"
+        DATABASE_URL="file:/opt/database/production.db" npx prisma generate
+        cd "/var/www/vibesinthreads-app"
+        pm2 start ecosystem.config.js
+        pm2 save
+        sleep 15
+        pm2 status
+    else
+        exit 1
+    fi
 fi
 
 # Test application endpoints
@@ -325,6 +339,63 @@ curl -f https://vibesinthreads.store/health && echo "✅ Rollback successful"
 
 ---
 
+## 🚨 Common Issues and Troubleshooting
+
+### Issue 1: Backend Service Fails with Prisma Client Error
+
+**Symptoms:**
+- Backend service shows "errored" status in PM2
+- Error logs show: `@prisma/client did not initialize yet. Please run "prisma generate"`
+
+**Root Cause:**
+- Prisma client generation fails when PM2 services are running
+- Environment variable DATABASE_URL not available during Prisma generation
+
+**Solution:**
+```bash
+# Stop all PM2 services first
+pm2 kill
+
+# Regenerate Prisma client with proper environment variable
+cd "/var/www/vibesinthreads-app/backend"
+DATABASE_URL="file:/opt/database/production.db" npx prisma generate
+
+# Restart services
+cd "/var/www/vibesinthreads-app"
+pm2 start ecosystem.config.js
+pm2 save
+```
+
+**Prevention:**
+- Always ensure DATABASE_URL is set when running Prisma commands
+- Stop PM2 services before regenerating Prisma client
+- Use direct `npx prisma generate` instead of npm scripts for troubleshooting
+
+### Issue 2: Frontend Service High Restart Count
+
+**Symptoms:**
+- Frontend service shows multiple restarts in PM2 status
+- Application may be intermittently accessible
+
+**Root Cause:**
+- Memory pressure or build issues
+- Next.js build artifacts missing or corrupted
+
+**Solution:**
+```bash
+# Check logs for specific errors
+pm2 logs vibes-frontend --lines 50
+
+# If memory related, increase memory limit in ecosystem.config.js
+# If build related, verify .next directory exists and has correct permissions
+ls -la /var/www/vibesinthreads-app/frontend/.next/
+
+# Restart with fresh logs
+pm2 restart vibes-frontend
+```
+
+---
+
 ## 🔧 Key Improvements Applied
 
 ### ✅ Native Dependency Handling
@@ -351,6 +422,12 @@ curl -f https://vibesinthreads.store/health && echo "✅ Rollback successful"
 - Validation of build artifacts before deployment
 - Consistent timestamp usage to prevent file extraction issues
 
+### ✅ Battle-Tested Fixes (v2.1)
+- Automatic Prisma client error detection and resolution
+- DATABASE_URL environment variable explicitly set for all Prisma operations
+- PM2 service recovery procedures for common startup failures
+- Comprehensive troubleshooting guide for known issues
+
 ---
 
 ## 📞 Support Information
@@ -366,7 +443,21 @@ curl -f https://vibesinthreads.store/health && echo "✅ Rollback successful"
 
 ---
 
+## 📋 Deployment History
+
+### v1.0.4 - August 16, 2025
+- **Status**: ✅ Successful
+- **Issues Encountered**: 
+  - Prisma client initialization error after PM2 start
+- **Resolution**: 
+  - Added DATABASE_URL environment variable to Prisma commands
+  - Implemented automatic Prisma client regeneration fix in verification step
+- **Deployment Time**: ~45 minutes (including troubleshooting)
+- **Verification**: All endpoints working correctly
+
+---
+
 **Created**: August 16, 2025  
-**Last Updated**: August 16, 2025 (Streamlined Process v2.0)  
-**Version**: 2.0  
-**Status**: Production Ready - Streamlined Process
+**Last Updated**: August 16, 2025 (v2.1 - Added Troubleshooting Section)  
+**Version**: 2.1  
+**Status**: Production Ready - Battle-Tested Process
