@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: process.env.NODE_ENV === 'production',
   },
   images: {
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    domains: ['vibesinthreads.store', 'localhost'],
     remotePatterns: [
       {
         protocol: 'https',
