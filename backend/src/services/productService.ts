@@ -213,7 +213,7 @@ export class ProductService {
       select: { id: true }
     });
 
-    const existingIds = existingProducts.map(p => p.id);
+    const existingIds = existingProducts.map((p: any) => p.id);
     const nonExistentIds = ids.filter(id => !existingIds.includes(id));
 
     if (existingIds.length === 0) {
@@ -355,7 +355,7 @@ export class ProductService {
     }
 
     // Use transaction to ensure consistency
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       // Delete existing images that are not in the new list
       const newImageIds = images.filter(img => img.id).map(img => img.id!);
       await tx.productImage.deleteMany({

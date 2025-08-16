@@ -41,7 +41,7 @@ export class CategoryService {
       orderBy: { name: 'asc' }
     });
 
-    return categories.map(category => ({
+    return categories.map((category: any) => ({
       ...category,
       productCount: category._count.products,
       children: category.children?.map((child: any) => ({
@@ -281,7 +281,7 @@ export class CategoryService {
       select: { id: true }
     });
 
-    const existingIds = existingCategories.map(c => c.id);
+    const existingIds = existingCategories.map((c: any) => c.id);
     const nonExistentIds = ids.filter(id => !existingIds.includes(id));
     
     const failed: { id: number; reason: string }[] = [];
@@ -428,7 +428,7 @@ export class CategoryService {
       orderBy: { name: 'asc' }
     });
 
-    return mainCategories.map(category => ({
+    return mainCategories.map((category: any) => ({
       ...category,
       productCount: category._count.products,
       children: category.children?.map((child: any) => ({

@@ -105,13 +105,13 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
 
     // Calculate total spent for each user (this would be better as a database field in production)
     const usersWithStats = await Promise.all(
-      users.map(async (user) => {
+      users.map(async (user: any) => {
         const orders = await prisma.order.findMany({
           where: { userId: user.id, status: 'delivered' },
           select: { totalAmount: true }
         });
 
-        const totalSpent = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+        const totalSpent = orders.reduce((sum: number, order: any) => sum + order.totalAmount, 0);
 
         return {
           id: user.id,
@@ -219,7 +219,7 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
       select: { totalAmount: true }
     });
 
-    const totalSpent = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const totalSpent = orders.reduce((sum: number, order: any) => sum + order.totalAmount, 0);
 
     const userWithStats = {
       ...user,
