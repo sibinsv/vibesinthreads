@@ -52,7 +52,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
 
     req.user = decoded;
     next();
-  } catch (error) {
+  } catch (_error) {
     res.status(401).json({
       success: false,
       message: 'Invalid or expired token'

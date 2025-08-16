@@ -319,7 +319,7 @@ export class CategoryService {
         }
 
         deletableIds.push(categoryId);
-      } catch (error) {
+      } catch (_error) {
         failed.push({ id: categoryId, reason: 'Error checking category' });
       }
     }
@@ -336,7 +336,7 @@ export class CategoryService {
         try {
           await this.deleteCategoryRecursive(categoryId);
           deleted++;
-        } catch (error) {
+        } catch (_error) {
           failed.push({ id: categoryId, reason: 'Failed to delete' });
         }
       }

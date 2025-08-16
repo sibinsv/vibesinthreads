@@ -61,7 +61,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     );
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
 
     res.status(201).json({
       success: true,
@@ -151,7 +151,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     );
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
 
     res.status(200).json({
       success: true,
@@ -251,7 +251,7 @@ export const adminLogin = async (req: Request, res: Response): Promise<void> => 
     );
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
 
     res.status(200).json({
       success: true,
