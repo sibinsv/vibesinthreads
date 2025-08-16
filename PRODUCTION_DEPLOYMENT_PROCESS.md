@@ -70,7 +70,7 @@ grep -r "localhost" frontend/.next/ && echo "❌ Found localhost references!" ||
 grep -r "vibesinthreads.store" frontend/.next/ && echo "✅ Production URLs found" || echo "❌ Missing production URLs!"
 
 # Create deployment packages
-tar -czf "vibes-backend-${DEPLOY_TIMESTAMP}.tar.gz" -C backend dist/ node_modules/ prisma/ package.json package-lock.json .env.production
+tar -czf "vibes-backend-${DEPLOY_TIMESTAMP}.tar.gz" -C backend dist/ node_modules/ prisma/ scripts/ package.json package-lock.json .env.production
 tar -czf "vibes-frontend-${DEPLOY_TIMESTAMP}.tar.gz" -C frontend .next/ node_modules/ public/ package.json package-lock.json .env.production
 
 echo "📦 Created packages: vibes-backend-${DEPLOY_TIMESTAMP}.tar.gz, vibes-frontend-${DEPLOY_TIMESTAMP}.tar.gz"
