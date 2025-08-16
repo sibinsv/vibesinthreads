@@ -72,6 +72,15 @@ echo "✅ Using existing production environment configuration"
 # Build backend with production environment
 NODE_ENV=production npm run build
 
+# If build fails with TypeScript errors, fix implicit any types:
+# sed -i 's/users.map(async (user) => {/users.map(async (user: any) => {/g' src/controllers/userController.ts
+# sed -i 's/orders.reduce((sum, order) => sum + order.totalAmount, 0)/orders.reduce((sum: number, order: any) => sum + order.totalAmount, 0)/g' src/controllers/userController.ts
+# sed -i 's/categories.map(category => ({/categories.map((category: any) => ({/g' src/services/categoryService.ts
+# sed -i 's/existingCategories.map(c => c.id)/existingCategories.map((c: any) => c.id)/g' src/services/categoryService.ts
+# sed -i 's/existingProducts.map(p => p.id)/existingProducts.map((p: any) => p.id)/g' src/services/productService.ts
+# sed -i 's/await prisma.$transaction(async (tx) => {/await prisma.$transaction(async (tx: any) => {/g' src/services/productService.ts
+# Then retry: NODE_ENV=production npm run build
+
 # Verify build was successful
 ls -la dist/
 echo "✅ Backend build completed"
@@ -317,7 +326,19 @@ sudo ls -la "/var/www/vibesinthreads-app/frontend/"
 echo "✅ Artifacts extracted successfully"
 ```
 
-### 18. Set Permissions for All Files and Directories
+### 18. Reinstall Native Dependencies for Target Platform
+```bash
+# Reinstall backend dependencies to ensure compatibility with Linux platform
+cd "/var/www/vibesinthreads-app/backend"
+npm install --production
+
+echo "✅ Backend dependencies reinstalled for target platform"
+
+# Note: Frontend dependencies typically don't need reinstallation as they're pre-built
+# But if issues arise, run: cd "/var/www/vibesinthreads-app/frontend" && npm install --production
+```
+
+### 19. Set Permissions for All Files and Directories
 ```bash
 # Set ownership and permissions for entire application
 sudo chown -R root:root "/var/www/vibesinthreads-app/"
@@ -351,6 +372,11 @@ sudo -u root npm run prisma:generate
 
 # Deploy migrations (production safe) - database will be created at /opt/database/production.db
 sudo -u root npm run db:migrate:deploy
+
+# If migration fails with P3005 error (database not empty), baseline the existing database:
+# export DATABASE_URL="file:/opt/database/production.db"
+# sudo -u root -E npx prisma migrate resolve --applied 20250815103817_init
+# sudo -u root -E npx prisma migrate status
 
 # Set proper permissions on the created database
 sudo chmod 644 "/opt/database/production.db"
@@ -418,7 +444,7 @@ module.exports = {
     {
       name: 'vibes-backend',
       script: './backend/dist/index.js',
-      cwd: '/var/www/vibesinthreads-app',
+      cwd: '/var/www/vibesinthreads-app/backend',
       env: {
         NODE_ENV: 'production',
         PORT: 5000,
@@ -465,6 +491,14 @@ echo "✅ Ecosystem configuration updated with standardized database path and pr
 # Verify the configuration
 echo "🔍 Verifying updated ecosystem configuration:"
 grep -E "(DATABASE_URL|JWT_SECRET)" ecosystem.config.js
+
+# Create log directories
+sudo mkdir -p "/var/www/vibesinthreads-app/backend/logs"
+sudo mkdir -p "/var/www/vibesinthreads-app/frontend/logs"
+sudo mkdir -p "/var/www/vibesinthreads-app/logs"
+
+# Remove any conflicting .env files that might interfere with PM2 environment variables
+rm -f "/var/www/vibesinthreads-app/backend/.env"
 
 # Start services using ecosystem config
 pm2 start ecosystem.config.js
@@ -589,6 +623,153 @@ curl -f https://vibesinthreads.store/health
 
 ---
 
+## 🔧 Troubleshooting & Common Issues
+
+### Issue 1: TypeScript Compilation Errors During Build
+
+**Problem**: TypeScript compilation fails with implicit 'any' type errors during production build.
+
+**Symptoms**:
+```
+error TS7006: Parameter 'user' implicitly has an 'any' type.
+error TS7006: Parameter 'sum' implicitly has an 'any' type.
+```
+
+**Solution**: Add explicit type annotations to resolve compilation errors:
+```bash
+# Fix implicit any types in userController.ts
+sed -i 's/users.map(async (user) => {/users.map(async (user: any) => {/g' backend/src/controllers/userController.ts
+sed -i 's/orders.reduce((sum, order) => sum + order.totalAmount, 0)/orders.reduce((sum: number, order: any) => sum + order.totalAmount, 0)/g' backend/src/controllers/userController.ts
+
+# Fix implicit any types in categoryService.ts
+sed -i 's/categories.map(category => ({/categories.map((category: any) => ({/g' backend/src/services/categoryService.ts
+sed -i 's/existingCategories.map(c => c.id)/existingCategories.map((c: any) => c.id)/g' backend/src/services/categoryService.ts
+
+# Fix implicit any types in productService.ts
+sed -i 's/existingProducts.map(p => p.id)/existingProducts.map((p: any) => p.id)/g' backend/src/services/productService.ts
+sed -i 's/await prisma.$transaction(async (tx) => {/await prisma.$transaction(async (tx: any) => {/g' backend/src/services/productService.ts
+```
+
+### Issue 2: Sharp Module Platform Compatibility
+
+**Problem**: Sharp module compiled for wrong platform (Windows node_modules deployed to Linux server).
+
+**Symptoms**:
+```
+Error: Could not load the "sharp" module using the linux-x64 runtime
+```
+
+**Solution**: Reinstall native dependencies on the target platform:
+```bash
+# On the production server, after extraction
+cd "/var/www/vibesinthreads-app/backend"
+npm install --production
+
+# For frontend (if needed)
+cd "/var/www/vibesinthreads-app/frontend"
+npm install --production
+```
+
+**Prevention**: Add to deployment process - always reinstall native dependencies on target server.
+
+### Issue 3: Prisma Database Migration Baseline
+
+**Problem**: Existing production database causes migration conflicts during deployment.
+
+**Symptoms**:
+```
+Error: P3005
+The database schema is not empty. Read more about how to baseline an existing production database
+```
+
+**Solution**: Mark existing migrations as applied for production databases:
+```bash
+cd "/var/www/vibesinthreads-app/backend"
+export DATABASE_URL="file:/opt/database/production.db"
+
+# Mark the initial migration as applied
+sudo -u root -E npx prisma migrate resolve --applied 20250815103817_init
+
+# Verify migration status
+sudo -u root -E npx prisma migrate status
+```
+
+### Issue 4: PM2 Environment Variable Loading Issues
+
+**Problem**: Backend fails to start due to environment variable conflicts between PM2 config and dotenv.
+
+**Symptoms**:
+```
+[dotenv@17.2.1] injecting env (0) from .env
+Error: Environment variable not found: DATABASE_URL
+```
+
+**Solution**: Use proper PM2 configuration with explicit working directory:
+```javascript
+// Updated ecosystem.config.js
+module.exports = {
+  apps: [
+    {
+      name: "vibes-backend",
+      script: "./backend/dist/index.js",
+      cwd: "/var/www/vibesinthreads-app/backend", // Explicit working directory
+      env: {
+        NODE_ENV: "production",
+        PORT: 5000,
+        DATABASE_URL: "file:/opt/database/production.db",
+        BASE_URL: "https://vibesinthreads.store",
+        JWT_SECRET: "your-jwt-secret",
+        JWT_REFRESH_SECRET: "your-jwt-refresh-secret",
+        CORS_ORIGIN: "https://vibesinthreads.store"
+      },
+      // ... other config
+    }
+  ]
+};
+```
+
+**Additional Fix**: Remove conflicting .env files:
+```bash
+# Remove empty or conflicting .env files that interfere with PM2 env vars
+cd "/var/www/vibesinthreads-app/backend"
+rm -f .env
+```
+
+### Issue 5: Different Tar File Timestamps
+
+**Problem**: Backend and frontend tar files created with different timestamps causing extraction script failures.
+
+**Solution**: Extract files individually with specific timestamps:
+```bash
+# Instead of using variable timestamp extraction, extract individually
+sudo tar -xzf "/tmp/vibes-backend-20250816-160542.tar.gz" -C "/var/www/vibesinthreads-app/backend"
+sudo tar -xzf "/tmp/vibes-frontend-20250816-160619.tar.gz" -C "/var/www/vibesinthreads-app/frontend"
+```
+
+### Issue 6: PM2 Logs Directory Creation
+
+**Problem**: PM2 fails to create log directories when cwd is changed.
+
+**Solution**: Pre-create log directories:
+```bash
+# Create log directories before starting PM2
+sudo mkdir -p "/var/www/vibesinthreads-app/backend/logs"
+sudo mkdir -p "/var/www/vibesinthreads-app/frontend/logs"
+sudo mkdir -p "/var/www/vibesinthreads-app/logs"
+```
+
+### Deployment Best Practices (Lessons Learned)
+
+1. **Cross-Platform Compatibility**: Always reinstall native dependencies on target platform
+2. **TypeScript Strict Mode**: Add explicit type annotations for production builds
+3. **Environment Variables**: Use PM2 environment configuration instead of .env files for production
+4. **Database Migrations**: For existing databases, use `prisma migrate resolve --applied` for baseline
+5. **Timestamps**: Use consistent timestamps or extract tar files individually
+6. **Directory Structure**: Ensure all required directories exist before PM2 startup
+7. **Build Verification**: Always verify builds work locally before deployment
+
+---
+
 ## 📞 Support Information
 
 - **SSH Access**: `ssh do-droplet`
@@ -602,5 +783,6 @@ curl -f https://vibesinthreads.store/health
 ---
 
 **Created**: August 16, 2025  
-**Version**: 1.0  
-**Status**: Production Ready
+**Last Updated**: August 16, 2025 (v1.0.2 deployment)  
+**Version**: 1.1  
+**Status**: Production Ready with Troubleshooting Guide
