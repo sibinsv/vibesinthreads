@@ -4,7 +4,9 @@ import fs from 'fs';
 import sharp from 'sharp';
 
 // Ensure upload directories exist
-const uploadDir = path.join(process.cwd(), 'uploads');
+const uploadDir = process.env.NODE_ENV === 'production' 
+  ? '/opt/uploads'
+  : path.join(process.cwd(), 'uploads');
 const imagesDir = path.join(uploadDir, 'images');
 const thumbnailsDir = path.join(uploadDir, 'thumbnails');
 

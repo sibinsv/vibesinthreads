@@ -122,6 +122,10 @@ echo "📦 Deploying: ${DEPLOY_TIMESTAMP}, Backup: ${BACKUP_TIMESTAMP}"
 # Ensure database directory exists
 sudo mkdir -p "/opt/database"
 
+# Ensure upload directory exists with proper permissions
+sudo mkdir -p "/opt/uploads/images" "/opt/uploads/thumbnails"
+sudo chmod -R 755 "/opt/uploads"
+
 echo "✅ Backup completed in /opt/backup/${BACKUP_TIMESTAMP}/"
 ```
 
